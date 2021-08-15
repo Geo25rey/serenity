@@ -124,6 +124,15 @@ public:
         m_lock.store(0, AK::memory_order_relaxed);
     }
 
+    [[nodiscard]] ALWAYS_INLINE u32 own_recursions() const
+    {
+        if (is_locked_by_current_processor()) {
+            atomic_thread_fence(AK::MemoryOrder::memory_order_acquire);
+            return m_recursions;
+        }
+        return 0;
+    }
+
 private:
     Atomic<FlatPtr> m_lock { 0 };
     u32 m_recursions { 0 };

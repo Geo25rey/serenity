@@ -535,7 +535,6 @@ private:
             });
         };
 
-        SpinlockLocker lock(g_scheduler_lock);
         {
             {
                 auto array = json.add_array("processes");
