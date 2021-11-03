@@ -579,6 +579,8 @@ bool Thread::tick()
         ++m_process->m_ticks_in_user;
         ++m_ticks_in_user;
     }
+    if (!m_ticks_left)
+        return false;
     return --m_ticks_left;
 }
 
