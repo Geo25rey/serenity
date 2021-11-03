@@ -391,6 +391,10 @@ void Scheduler::leave_context_switch(Thread& prev_thread, Thread& current_thread
 
     current_thread.get_lock().unlock(current_thread.saved_flags());
     VERIFY(!current_thread.get_lock().is_locked_by_current_processor());
+
+    if (!current_thread.is_idle_thread()) {
+        current_thread.save_critical(1);
+    }
 }
 
 void Scheduler::prepare_after_exec()
