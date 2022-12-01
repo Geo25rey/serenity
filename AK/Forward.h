@@ -31,6 +31,7 @@ class StringView;
 class Time;
 class URL;
 class FlyString;
+class UTF8String;
 class Utf16View;
 class Utf32View;
 class Utf8CodePointIterator;
@@ -197,6 +198,7 @@ using AK::URL;
 using AK::Utf16View;
 using AK::Utf32View;
 using AK::Utf8CodePointIterator;
+using AK::UTF8String;
 using AK::Utf8View;
 using AK::Vector;
 

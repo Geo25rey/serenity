@@ -74,6 +74,7 @@ set(AK_TEST_SOURCES
     TestURL.cpp
     TestUtf16.cpp
     TestUtf8.cpp
+    TestUTF8String.cpp
     TestVariant.cpp
     TestVector.cpp
     TestWeakPtr.cpp

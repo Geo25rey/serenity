@@ -10,6 +10,7 @@
 #include <AK/StdLibExtras.h>
 #include <AK/StringBuilder.h>
 #include <AK/StringView.h>
+#include <AK/UTF8String.h>
 #include <AK/UnicodeUtils.h>
 #include <AK/Utf32View.h>
 
@@ -114,6 +115,11 @@ String StringBuilder::to_string() const
 String StringBuilder::build() const
 {
     return to_string();
+}
+
+ErrorOr<UTF8String> StringBuilder::to_utf8_string() const
+{
+    return UTF8String::from_utf8(string_view());
 }
 #endif
 

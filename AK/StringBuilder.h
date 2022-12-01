@@ -62,7 +62,9 @@ public:
 #ifndef KERNEL
     [[nodiscard]] String build() const;
     [[nodiscard]] String to_string() const;
+    ErrorOr<UTF8String> to_utf8_string() const;
 #endif
+
     [[nodiscard]] ByteBuffer to_byte_buffer() const;
 
     [[nodiscard]] StringView string_view() const;

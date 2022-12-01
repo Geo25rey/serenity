@@ -23,9 +23,10 @@ set(AK_SOURCES
     Time.cpp
     URL.cpp
     URLParser.cpp
+    UTF8String.cpp
+    UUID.cpp
     Utf16View.cpp
     Utf8View.cpp
-    UUID.cpp
 )
 # AK sources are included from many different places, such as the Kernel, LibC, and Loader
 list(TRANSFORM AK_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
