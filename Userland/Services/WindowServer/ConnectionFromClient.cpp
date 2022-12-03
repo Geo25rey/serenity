@@ -374,7 +374,7 @@ void ConnectionFromClient::show_screen_numbers(bool show)
         Compositor::the().decrement_show_screen_number({});
 }
 
-void ConnectionFromClient::set_window_title(i32 window_id, String const& title)
+void ConnectionFromClient::set_window_title(i32 window_id, UTF8String const& title)
 {
     auto it = m_windows.find(window_id);
     if (it == m_windows.end()) {
@@ -590,7 +590,7 @@ void ConnectionFromClient::create_window(i32 window_id, Gfx::IntRect const& rect
     bool fullscreen, bool frameless, bool forced_shadow, float opacity,
     float alpha_hit_threshold, Gfx::IntSize const& base_size, Gfx::IntSize const& size_increment,
     Gfx::IntSize const& minimum_size, Optional<Gfx::IntSize> const& resize_aspect_ratio, i32 type, i32 mode,
-    String const& title, i32 parent_window_id, Gfx::IntRect const& launch_origin_rect)
+    UTF8String const& title, i32 parent_window_id, Gfx::IntRect const& launch_origin_rect)
 {
     Window* parent_window = nullptr;
     if (parent_window_id) {

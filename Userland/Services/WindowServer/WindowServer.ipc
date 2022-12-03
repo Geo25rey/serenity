@@ -58,14 +58,14 @@ endpoint WindowServer
         Optional<Gfx::IntSize> resize_aspect_ratio,
         i32 type,
         i32 mode,
-        [UTF8] String title,
+        UTF8String title,
         i32 parent_window_id,
         Gfx::IntRect launch_origin_rect) =|
 
     destroy_window(i32 window_id) => (Vector<i32> destroyed_window_ids)
 
-    set_window_title(i32 window_id, [UTF8] String title) =|
-    get_window_title(i32 window_id) => ([UTF8] String title)
+    set_window_title(i32 window_id, UTF8String title) =|
+    get_window_title(i32 window_id) => (UTF8String title)
 
     set_window_progress(i32 window_id, Optional<i32> progress) =|
 

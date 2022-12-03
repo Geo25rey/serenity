@@ -161,7 +161,7 @@ void Window::show()
         m_resize_aspect_ratio,
         (i32)m_window_type,
         (i32)m_window_mode,
-        m_title_when_windowless,
+        MUST(UTF8String::from_ak_string(m_title_when_windowless)),
         parent_window ? parent_window->window_id() : 0,
         launch_origin_rect);
     m_visible = true;
@@ -240,14 +240,14 @@ void Window::set_title(String title)
     m_title_when_windowless = move(title);
     if (!is_visible())
         return;
-    ConnectionToWindowServer::the().async_set_window_title(m_window_id, m_title_when_windowless);
+    ConnectionToWindowServer::the().async_set_window_title(m_window_id, MUST(UTF8String::from_ak_string(m_title_when_windowless)));
 }
 
 String Window::title() const
 {
     if (!is_visible())
         return m_title_when_windowless;
-    return ConnectionToWindowServer::the().get_window_title(m_window_id);
+    return ConnectionToWindowServer::the().get_window_title(m_window_id).to_ak_string();
 }
 
 Gfx::IntRect Window::applet_rect_on_screen() const

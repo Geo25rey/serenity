@@ -133,11 +133,11 @@ void Window::destroy()
     set_visible(false);
 }
 
-void Window::set_title(String const& title)
+void Window::set_title(UTF8String title)
 {
     if (m_title == title)
         return;
-    m_title = title;
+    m_title = move(title);
     frame().invalidate_titlebar();
     WindowManager::the().notify_title_changed(*this);
 }
@@ -1061,12 +1061,12 @@ void Window::set_modified(bool modified)
 
 String Window::computed_title() const
 {
-    String title = m_title.replace("[*]"sv, is_modified() ? " (*)"sv : ""sv, ReplaceMode::FirstOnly);
+    auto title = MUST(m_title.replace("[*]"sv, is_modified() ? " (*)"sv : ""sv, ReplaceMode::FirstOnly));
     if (m_title_username.has_value())
-        title = String::formatted("{} [{}]", title, m_title_username.value());
+        title = MUST(UTF8String::formatted("{} [{}]", title, m_title_username.value()));
     if (client() && client()->is_unresponsive())
         return String::formatted("{} (Not responding)", title);
-    return title;
+    return title.to_ak_string();
 }
 
 ErrorOr<Optional<String>> Window::compute_title_username(ConnectionFromClient* client)

@@ -8,6 +8,7 @@
 
 #include "HitTestResult.h"
 #include <AK/String.h>
+#include <AK/UTF8String.h>
 #include <AK/WeakPtr.h>
 #include <LibCore/Object.h>
 #include <LibGfx/Bitmap.h>
@@ -148,8 +149,8 @@ public:
     bool is_internal() const { return m_client_id == -1; }
     i32 client_id() const { return m_client_id; }
 
-    String title() const { return m_title; }
-    void set_title(String const&);
+    UTF8String const& title() const { return m_title; }
+    void set_title(UTF8String);
 
     String computed_title() const;
 
@@ -394,7 +395,7 @@ private:
 
     Menubar m_menubar;
 
-    String m_title;
+    UTF8String m_title;
     Optional<String> m_title_username;
     Gfx::IntRect m_rect;
     Gfx::IntRect m_saved_nonfullscreen_rect;
