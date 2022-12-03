@@ -62,6 +62,8 @@ public:
     // Returns a StringView covering the full length of the string. Note that iterating this will go byte-at-a-time, not code-point-at-a-time.
     [[nodiscard]] StringView bytes_as_string_view() const;
 
+    ErrorOr<UTF8String> replace(StringView needle, StringView replacement, ReplaceMode replace_mode) const;
+
     [[nodiscard]] bool operator==(UTF8String const&) const;
     [[nodiscard]] bool operator!=(UTF8String const& other) const { return !(*this == other); }
 

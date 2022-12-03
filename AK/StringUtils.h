@@ -105,6 +105,8 @@ String invert_case(StringView);
 String replace(StringView, StringView needle, StringView replacement, ReplaceMode);
 size_t count(StringView, StringView needle);
 
+ErrorOr<UTF8String> replace_in_utf8_string(UTF8String const&, StringView needle, StringView replacement, ReplaceMode);
+
 }
 
 }

@@ -78,3 +78,18 @@ TEST_CASE(ak_format)
     auto foo = MUST(UTF8String::formatted("Hello {}", MUST(UTF8String::from_utf8("friends"sv))));
     EXPECT_EQ(foo, "Hello friends"sv);
 }
+
+TEST_CASE(replace)
+{
+    {
+        auto haystack = MUST(UTF8String::from_utf8("Hello enemies"sv));
+        auto result = MUST(haystack.replace("enemies"sv, "friends"sv, ReplaceMode::All));
+        EXPECT_EQ(result, "Hello friends"sv);
+    }
+
+    {
+        auto base_title = MUST(UTF8String::from_utf8("anon@courage:~"sv));
+        auto result = MUST(base_title.replace("[*]"sv, "(*)"sv, ReplaceMode::FirstOnly));
+        EXPECT_EQ(result, "anon@courage:~"sv);
+    }
+}

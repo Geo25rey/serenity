@@ -12,6 +12,7 @@
 #include <AK/StringBuilder.h>
 #include <AK/StringUtils.h>
 #include <AK/StringView.h>
+#include <AK/UTF8String.h>
 #include <AK/Vector.h>
 
 #ifndef KERNEL
@@ -532,6 +533,34 @@ String replace(StringView str, StringView needle, StringView replacement, Replac
     }
     replaced_string.append(str.substring_view(last_position, str.length() - last_position));
     return replaced_string.build();
+}
+
+ErrorOr<UTF8String> replace_in_utf8_string(UTF8String const& haystack, StringView needle, StringView replacement, ReplaceMode replace_mode)
+{
+    if (haystack.is_empty())
+        return haystack;
+
+    Vector<size_t> positions;
+    if (replace_mode == ReplaceMode::All) {
+        positions = haystack.bytes_as_string_view().find_all(needle);
+        if (!positions.size())
+            return haystack;
+    } else {
+        auto pos = haystack.bytes_as_string_view().find(needle);
+        if (!pos.has_value())
+            return haystack;
+        positions.append(pos.value());
+    }
+
+    StringBuilder replaced_string;
+    size_t last_position = 0;
+    for (auto& position : positions) {
+        replaced_string.append(haystack.bytes_as_string_view().substring_view(last_position, position - last_position));
+        replaced_string.append(replacement);
+        last_position = position + needle.length();
+    }
+    replaced_string.append(haystack.bytes_as_string_view().substring_view(last_position, haystack.bytes_as_string_view().length() - last_position));
+    return replaced_string.to_utf8_string();
 }
 #endif
 

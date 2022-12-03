@@ -8,6 +8,7 @@
 #include <AK/Format.h>
 #include <AK/Memory.h>
 #include <AK/StringBuilder.h>
+#include <AK/StringUtils.h>
 #include <AK/UTF8String.h>
 #include <AK/Utf8View.h>
 #include <stdlib.h>
@@ -313,6 +314,11 @@ ErrorOr<UTF8String> UTF8String::from_ak_string(String const& ak_string)
     if (!view.validate())
         return Error::from_string_literal("UTF8String::from_ak_strong: Input was not valid UTF-8");
     return UTF8String::from_utf8(ak_string.view());
+}
+
+ErrorOr<UTF8String> UTF8String::replace(StringView needle, StringView replacement, ReplaceMode replace_mode) const
+{
+    return StringUtils::replace_in_utf8_string(*this, needle, replacement, replace_mode);
 }
 
 }
