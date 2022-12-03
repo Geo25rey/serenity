@@ -100,6 +100,14 @@ public:
 
     [[nodiscard]] bool is_short_string() const { return reinterpret_cast<uintptr_t>(m_data) & 1; }
 
+    // Creates a new AK::String with the same text.
+    // NOTE: This will be removed once all code has been converted.
+    String to_ak_string() const;
+
+    // Creates a UTF8String from an AK::String. An error is returned if the input string is not valid UTF-8.
+    // NOTE: This will be removed once all code has been converted.
+    static ErrorOr<UTF8String> from_ak_string(String const&);
+
 private:
     struct ShortString {
         size_t byte_count() const { return byte_count_and_type >> 1; }

@@ -302,4 +302,17 @@ ErrorOr<void> Formatter<UTF8String>::format(FormatBuilder& builder, UTF8String c
     return Formatter<StringView>::format(builder, utf8_string.bytes_as_string_view());
 }
 
+String UTF8String::to_ak_string() const
+{
+    return String(bytes_as_string_view());
+}
+
+ErrorOr<UTF8String> UTF8String::from_ak_string(String const& ak_string)
+{
+    Utf8View view(ak_string);
+    if (!view.validate())
+        return Error::from_string_literal("UTF8String::from_ak_strong: Input was not valid UTF-8");
+    return UTF8String::from_utf8(ak_string.view());
+}
+
 }
