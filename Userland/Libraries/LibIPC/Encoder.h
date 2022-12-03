@@ -44,6 +44,7 @@ public:
     Encoder& operator<<(char const*);
     Encoder& operator<<(StringView);
     Encoder& operator<<(String const&);
+    Encoder& operator<<(UTF8String const&);
     Encoder& operator<<(ByteBuffer const&);
     Encoder& operator<<(JsonValue const&);
     Encoder& operator<<(URL const&);

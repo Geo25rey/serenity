@@ -788,6 +788,7 @@ void build(StringBuilder& builder, Vector<Endpoint> const& endpoints)
     generator.appendln(R"~~~(#include <AK/MemoryStream.h>
 #include <AK/OwnPtr.h>
 #include <AK/Result.h>
+#include <AK/UTF8String.h>
 #include <AK/Utf8View.h>
 #include <LibIPC/Connection.h>
 #include <LibIPC/Decoder.h>

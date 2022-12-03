@@ -48,6 +48,7 @@ public:
     ErrorOr<void> decode(float&);
     ErrorOr<void> decode(double&);
     ErrorOr<void> decode(String&);
+    ErrorOr<void> decode(UTF8String&);
     ErrorOr<void> decode(ByteBuffer&);
     ErrorOr<void> decode(JsonValue&);
     ErrorOr<void> decode(URL&);

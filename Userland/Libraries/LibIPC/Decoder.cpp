@@ -7,6 +7,7 @@
 #include <AK/JsonValue.h>
 #include <AK/MemoryStream.h>
 #include <AK/URL.h>
+#include <AK/UTF8String.h>
 #include <LibCore/AnonymousBuffer.h>
 #include <LibCore/DateTime.h>
 #include <LibCore/Proxy.h>
@@ -107,6 +108,24 @@ ErrorOr<void> Decoder::decode(String& value)
     m_stream >> Bytes { text_buffer, static_cast<size_t>(length) };
     value = *text_impl;
     return m_stream.try_handle_any_error();
+}
+
+ErrorOr<void> Decoder::decode(UTF8String& value)
+{
+    u32 byte_count;
+    TRY(decode(byte_count));
+
+    if (byte_count == 0) {
+        value = UTF8String {};
+        return {};
+    }
+
+    auto buffer = TRY(ByteBuffer::create_uninitialized(byte_count));
+    m_stream >> buffer.bytes();
+    TRY(m_stream.try_handle_any_error());
+
+    value = TRY(UTF8String::from_utf8(StringView { buffer.bytes() }));
+    return {};
 }
 
 ErrorOr<void> Decoder::decode(ByteBuffer& value)

@@ -11,6 +11,7 @@
 #include <AK/JsonValue.h>
 #include <AK/String.h>
 #include <AK/URL.h>
+#include <AK/UTF8String.h>
 #include <LibCore/AnonymousBuffer.h>
 #include <LibCore/DateTime.h>
 #include <LibCore/Proxy.h>
@@ -152,6 +153,12 @@ Encoder& Encoder::operator<<(String const& value)
         return *this << (i32)-1;
     *this << static_cast<i32>(value.length());
     return *this << value.view();
+}
+
+Encoder& Encoder::operator<<(UTF8String const& value)
+{
+    *this << static_cast<u32>(value.byte_count());
+    return *this << value.bytes_as_string_view();
 }
 
 Encoder& Encoder::operator<<(ByteBuffer const& value)
