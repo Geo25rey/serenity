@@ -18,7 +18,7 @@ void Menubar::layout_menu(Menu& menu, Gfx::IntRect window_rect)
     auto& wm = WindowManager::the();
     auto menubar_rect = Gfx::WindowTheme::current().menubar_rect(Gfx::WindowTheme::WindowType::Normal, Gfx::WindowTheme::WindowMode::Other, window_rect, wm.palette(), 1);
 
-    int text_width = wm.font().width(Gfx::parse_ampersand_string(menu.name()));
+    int text_width = wm.font().width(Gfx::parse_ampersand_string(menu.name().bytes_as_string_view()));
     menu.set_rect_in_window_menubar({ m_next_menu_location.x(), 0, text_width + menubar_menu_margin, menubar_rect.height() });
     m_next_menu_location.translate_by(menu.rect_in_window_menubar().width(), 0);
 }

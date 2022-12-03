@@ -328,7 +328,7 @@ void WindowFrame::paint_menubar(Gfx::Painter& painter)
         if (paint_as_pressed || paint_as_hovered) {
             Gfx::StylePainter::paint_button(painter, menu.rect_in_window_menubar(), palette, Gfx::ButtonStyle::Coolbar, paint_as_pressed, paint_as_hovered);
         }
-        painter.draw_ui_text(text_rect, menu.name(), font, Gfx::TextAlignment::Center, text_color);
+        painter.draw_ui_text(text_rect, menu.name().bytes_as_string_view(), font, Gfx::TextAlignment::Center, text_color);
         return IterationDecision::Continue;
     });
 }

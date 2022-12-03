@@ -38,13 +38,13 @@ u32 find_ampersand_shortcut_character(StringView string)
     return 0;
 }
 
-Menu::Menu(ConnectionFromClient* client, int menu_id, String name)
+Menu::Menu(ConnectionFromClient* client, int menu_id, UTF8String name)
     : Core::Object(client)
     , m_client(client)
     , m_menu_id(menu_id)
     , m_name(move(name))
 {
-    m_alt_shortcut_character = find_ampersand_shortcut_character(m_name);
+    m_alt_shortcut_character = find_ampersand_shortcut_character(m_name.bytes_as_string_view());
 }
 
 Gfx::Font const& Menu::font() const

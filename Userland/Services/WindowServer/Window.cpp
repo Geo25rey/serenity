@@ -701,7 +701,7 @@ void Window::request_update(Gfx::IntRect const& rect, bool ignore_occlusion)
 void Window::ensure_window_menu()
 {
     if (!m_window_menu) {
-        m_window_menu = Menu::construct(nullptr, -1, "(Window Menu)");
+        m_window_menu = Menu::construct(nullptr, -1, MUST(UTF8String::from_utf8("(Window Menu)"sv)));
         m_window_menu->set_window_menu_of(*this);
 
         auto minimize_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::MinimizeOrUnminimize, "");

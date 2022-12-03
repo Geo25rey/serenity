@@ -134,7 +134,7 @@ int Menu::realize_menu(RefPtr<Action> default_action)
     unrealize_menu();
     m_menu_id = s_menu_id_allocator.allocate();
 
-    ConnectionToWindowServer::the().async_create_menu(m_menu_id, m_name);
+    ConnectionToWindowServer::the().async_create_menu(m_menu_id, MUST(UTF8String::from_ak_string(m_name)));
 
     dbgln_if(MENU_DEBUG, "GUI::Menu::realize_menu(): New menu ID: {}", m_menu_id);
     VERIFY(m_menu_id > 0);

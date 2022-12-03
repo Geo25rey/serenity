@@ -7,7 +7,7 @@
 #pragma once
 
 #include <AK/NonnullOwnPtrVector.h>
-#include <AK/String.h>
+#include <AK/UTF8String.h>
 #include <AK/WeakPtr.h>
 #include <LibCore/Object.h>
 #include <LibGfx/Font/Font.h>
@@ -59,7 +59,7 @@ public:
     void update_alt_shortcuts_for_items();
     void add_item(NonnullOwnPtr<MenuItem>);
 
-    String const& name() const { return m_name; }
+    UTF8String const& name() const { return m_name; }
 
     template<typename Callback>
     IterationDecision for_each_item(Callback callback)
@@ -135,7 +135,7 @@ public:
     Vector<size_t> const* items_with_alt_shortcut(u32 alt_shortcut) const;
 
 private:
-    Menu(ConnectionFromClient*, int menu_id, String name);
+    Menu(ConnectionFromClient*, int menu_id, UTF8String name);
 
     virtual void event(Core::Event&) override;
 
@@ -152,7 +152,7 @@ private:
 
     ConnectionFromClient* m_client { nullptr };
     int m_menu_id { 0 };
-    String m_name;
+    UTF8String m_name;
     u32 m_alt_shortcut_character { 0 };
     Gfx::IntRect m_rect_in_window_menubar;
     Gfx::IntPoint m_unadjusted_position;
