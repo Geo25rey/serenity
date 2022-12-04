@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021, Andreas Kling <kling@serenityos.org>
+ * Copyright (c) 2018-2022, Andreas Kling <kling@serenityos.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -111,7 +111,7 @@ Window::Window(ConnectionFromClient& client, WindowType window_type, WindowMode 
     if (parent_window)
         set_parent_window(*parent_window);
     if (!is_frameless() && type() == WindowType::Normal) {
-        if (auto title_username_maybe = compute_title_username(&client); !title_username_maybe.is_error())
+        if (auto title_username_maybe = compute_title_username(client); !title_username_maybe.is_error())
             m_title_username = title_username_maybe.release_value();
     }
     WindowManager::the().add_window(*this);
@@ -1059,24 +1059,22 @@ void Window::set_modified(bool modified)
     frame().invalidate_titlebar();
 }
 
-String Window::computed_title() const
+UTF8String Window::computed_title() const
 {
     auto title = MUST(m_title.replace("[*]"sv, is_modified() ? " (*)"sv : ""sv, ReplaceMode::FirstOnly));
     if (m_title_username.has_value())
         title = MUST(UTF8String::formatted("{} [{}]", title, m_title_username.value()));
     if (client() && client()->is_unresponsive())
-        return String::formatted("{} (Not responding)", title);
-    return title.to_ak_string();
+        return MUST(UTF8String::formatted("{} (Not responding)", title));
+    return title;
 }
 
-ErrorOr<Optional<String>> Window::compute_title_username(ConnectionFromClient* client)
+ErrorOr<Optional<UTF8String>> Window::compute_title_username(ConnectionFromClient& client)
 {
-    if (!client)
-        return Error::from_string_literal("Tried to compute title username without a client");
     auto stats = Core::ProcessStatisticsReader::get_all(true);
     if (!stats.has_value())
         return Error::from_string_literal("Failed to get all process statistics");
-    pid_t client_pid = TRY(client->socket().peer_pid());
+    pid_t client_pid = TRY(client.socket().peer_pid());
     auto client_stat = stats.value().processes.first_matching([&](auto& stat) { return stat.pid == client_pid; });
     if (!client_stat.has_value())
         return Error::from_string_literal("Failed to find client process stat");
@@ -1085,8 +1083,8 @@ ErrorOr<Optional<String>> Window::compute_title_username(ConnectionFromClient* c
     if (!login_session_stat.has_value())
         return Error::from_string_literal("Failed to find login process stat");
     if (login_session_stat.value().uid == client_stat.value().uid)
-        return Optional<String> {};
-    return client_stat.value().username;
+        return Optional<UTF8String> {};
+    return TRY(UTF8String::from_ak_string(client_stat.value().username));
 }
 
 }

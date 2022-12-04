@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021, Andreas Kling <kling@serenityos.org>
+ * Copyright (c) 2018-2022, Andreas Kling <kling@serenityos.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,7 +7,6 @@
 #pragma once
 
 #include "HitTestResult.h"
-#include <AK/String.h>
 #include <AK/UTF8String.h>
 #include <AK/WeakPtr.h>
 #include <LibCore/Object.h>
@@ -152,7 +151,7 @@ public:
     UTF8String const& title() const { return m_title; }
     void set_title(UTF8String);
 
-    String computed_title() const;
+    UTF8String computed_title() const;
 
     float opacity() const { return m_opacity; }
     void set_opacity(float);
@@ -386,7 +385,7 @@ private:
     void ensure_window_menu();
     void update_window_menu_items();
     void modal_unparented();
-    ErrorOr<Optional<String>> compute_title_username(ConnectionFromClient* client);
+    ErrorOr<Optional<UTF8String>> compute_title_username(ConnectionFromClient&);
 
     ConnectionFromClient* m_client { nullptr };
 
@@ -396,7 +395,7 @@ private:
     Menubar m_menubar;
 
     UTF8String m_title;
-    Optional<String> m_title_username;
+    Optional<UTF8String> m_title_username;
     Gfx::IntRect m_rect;
     Gfx::IntRect m_saved_nonfullscreen_rect;
     Gfx::IntRect m_taskbar_rect;

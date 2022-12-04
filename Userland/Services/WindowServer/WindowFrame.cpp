@@ -336,7 +336,7 @@ void WindowFrame::paint_menubar(Gfx::Painter& painter)
 void WindowFrame::paint_normal_frame(Gfx::Painter& painter)
 {
     auto palette = WindowManager::the().palette();
-    Gfx::WindowTheme::current().paint_normal_frame(painter, window_state_for_theme(), to_theme_window_mode(m_window.mode()), m_window.rect(), m_window.computed_title(), m_window.icon(), palette, leftmost_titlebar_button_rect(), menu_row_count(), m_window.is_modified());
+    Gfx::WindowTheme::current().paint_normal_frame(painter, window_state_for_theme(), to_theme_window_mode(m_window.mode()), m_window.rect(), m_window.computed_title().bytes_as_string_view(), m_window.icon(), palette, leftmost_titlebar_button_rect(), menu_row_count(), m_window.is_modified());
 
     if (m_window.menubar().has_menus() && m_window.should_show_menubar())
         paint_menubar(painter);

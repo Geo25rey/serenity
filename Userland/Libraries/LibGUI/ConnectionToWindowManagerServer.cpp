@@ -20,10 +20,10 @@ ConnectionToWindowManagerServer& ConnectionToWindowManagerServer::the()
 
 void ConnectionToWindowManagerServer::window_state_changed(i32 wm_id, i32 client_id, i32 window_id,
     u32 workspace_row, u32 workspace_column, bool is_active, bool is_blocked, bool is_minimized, bool is_frameless,
-    i32 window_type, String const& title, Gfx::IntRect const& rect, Optional<i32> const& progress)
+    i32 window_type, UTF8String const& title, Gfx::IntRect const& rect, Optional<i32> const& progress)
 {
     if (auto* window = Window::from_window_id(wm_id))
-        Core::EventLoop::current().post_event(*window, make<WMWindowStateChangedEvent>(client_id, window_id, title, rect, workspace_row, workspace_column, is_active, is_blocked, static_cast<WindowType>(window_type), is_minimized, is_frameless, progress));
+        Core::EventLoop::current().post_event(*window, make<WMWindowStateChangedEvent>(client_id, window_id, title.to_ak_string(), rect, workspace_row, workspace_column, is_active, is_blocked, static_cast<WindowType>(window_type), is_minimized, is_frameless, progress));
 }
 
 void ConnectionToWindowManagerServer::applet_area_size_changed(i32 wm_id, Gfx::IntSize const& size)
