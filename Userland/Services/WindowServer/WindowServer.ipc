@@ -137,8 +137,8 @@ endpoint WindowServer
     clear_system_theme_override() =|
     is_system_theme_overridden() => (bool overridden)
 
-    apply_cursor_theme(String name) =|
-    get_cursor_theme() => (String name)
+    apply_cursor_theme(UTF8String name) =|
+    get_cursor_theme() => (UTF8String name)
 
     set_cursor_highlight_radius(int radius) =|
     get_cursor_highlight_radius() => (int radius)

@@ -116,7 +116,7 @@ ThemeWidget::ThemeWidget()
     m_cursors_tableview->model()->invalidate();
 
     auto theme_name = GUI::ConnectionToWindowServer::the().get_cursor_theme();
-    m_mouse_cursor_model->change_theme(theme_name);
+    m_mouse_cursor_model->change_theme(theme_name.to_ak_string());
 
     m_theme_name_box = find_descendant_of_type_named<GUI::ComboBox>("theme_name_box");
     m_theme_name_box->on_change = [this](String const& value, GUI::ModelIndex const&) {
@@ -125,12 +125,12 @@ ThemeWidget::ThemeWidget()
     };
     m_theme_name_box->set_model(ThemeModel::create());
     m_theme_name_box->model()->invalidate();
-    m_theme_name_box->set_text(theme_name, GUI::AllowCallback::No);
+    m_theme_name_box->set_text(theme_name.to_ak_string(), GUI::AllowCallback::No);
 }
 
 void ThemeWidget::apply_settings()
 {
-    GUI::ConnectionToWindowServer::the().async_apply_cursor_theme(m_theme_name_box->text());
+    GUI::ConnectionToWindowServer::the().async_apply_cursor_theme(MUST(UTF8String::from_ak_string(m_theme_name_box->text())));
 }
 
 void ThemeWidget::reset_default_values()

@@ -897,7 +897,7 @@ Messages::WindowServer::IsSystemThemeOverriddenResponse ConnectionFromClient::is
     return WindowManager::the().is_theme_overridden();
 }
 
-void ConnectionFromClient::apply_cursor_theme(String const& name)
+void ConnectionFromClient::apply_cursor_theme(UTF8String const& name)
 {
     WindowManager::the().apply_cursor_theme(name);
 }
@@ -925,7 +925,7 @@ Messages::WindowServer::GetCursorHighlightColorResponse ConnectionFromClient::ge
 Messages::WindowServer::GetCursorThemeResponse ConnectionFromClient::get_cursor_theme()
 {
     auto config = Core::ConfigFile::open("/etc/WindowServer.ini").release_value_but_fixme_should_propagate_errors();
-    auto name = config->read_entry("Mouse", "CursorTheme");
+    auto name = MUST(UTF8String::from_ak_string(config->read_entry("Mouse", "CursorTheme")));
     return name;
 }
 

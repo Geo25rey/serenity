@@ -315,7 +315,7 @@ public:
 
     MultiScaleBitmaps const* overlay_rect_shadow() const { return m_overlay_rect_shadow.ptr(); }
 
-    void apply_cursor_theme(String const& name);
+    void apply_cursor_theme(UTF8String const& name);
 
     void set_cursor_highlight_radius(int radius);
     void set_cursor_highlight_color(Gfx::Color const& color);

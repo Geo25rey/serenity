@@ -87,7 +87,7 @@ void WindowManager::reload_config()
     Color default_highlight_color = Color::NamedColor::Red;
     default_highlight_color.set_alpha(110);
     m_cursor_highlight_color = Color::from_string(m_config->read_entry("Mouse", "CursorHighlightColor")).value_or(default_highlight_color);
-    apply_cursor_theme(m_config->read_entry("Mouse", "CursorTheme", "Default"));
+    apply_cursor_theme(MUST(UTF8String::from_ak_string(m_config->read_entry("Mouse", "CursorTheme", "Default"))));
 
     auto reload_graphic = [&](RefPtr<MultiScaleBitmaps>& bitmap, String const& name) {
         if (bitmap) {
@@ -2199,10 +2199,10 @@ WindowStack& WindowManager::get_rendering_window_stacks(WindowStack*& transition
     return Compositor::the().get_rendering_window_stacks(transitioning_window_stack);
 }
 
-void WindowManager::apply_cursor_theme(String const& theme_name)
+void WindowManager::apply_cursor_theme(UTF8String const& theme_name)
 {
-    auto theme_path = String::formatted("/res/cursor-themes/{}/{}", theme_name, "Config.ini");
-    auto cursor_theme_config_or_error = Core::ConfigFile::open(theme_path);
+    auto theme_path = MUST(UTF8String::formatted("/res/cursor-themes/{}/{}", theme_name, "Config.ini"));
+    auto cursor_theme_config_or_error = Core::ConfigFile::open(theme_path.to_ak_string());
     if (cursor_theme_config_or_error.is_error()) {
         dbgln("Unable to open cursor theme '{}': {}", theme_path, cursor_theme_config_or_error.error());
         return;
@@ -2250,7 +2250,7 @@ void WindowManager::apply_cursor_theme(String const& theme_name)
     reload_cursor(m_zoom_cursor, "Zoom");
 
     Compositor::the().invalidate_cursor();
-    m_config->write_entry("Mouse", "CursorTheme", theme_name);
+    m_config->write_entry("Mouse", "CursorTheme", theme_name.to_ak_string());
     sync_config_to_disk();
 }
 

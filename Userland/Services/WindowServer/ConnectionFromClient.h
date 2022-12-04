@@ -151,7 +151,7 @@ private:
     virtual Messages::WindowServer::GetSystemThemeOverrideResponse get_system_theme_override() override;
     virtual void clear_system_theme_override() override;
     virtual Messages::WindowServer::IsSystemThemeOverriddenResponse is_system_theme_overridden() override;
-    virtual void apply_cursor_theme(String const&) override;
+    virtual void apply_cursor_theme(UTF8String const&) override;
     virtual void set_cursor_highlight_radius(int radius) override;
     virtual Messages::WindowServer::GetCursorHighlightRadiusResponse get_cursor_highlight_radius() override;
     virtual void set_cursor_highlight_color(Gfx::Color const& color) override;
