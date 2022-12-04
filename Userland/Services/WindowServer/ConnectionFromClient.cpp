@@ -863,7 +863,7 @@ void ConnectionFromClient::set_accepts_drag(bool accepts)
     wm.set_accepts_drag(accepts);
 }
 
-Messages::WindowServer::SetSystemThemeResponse ConnectionFromClient::set_system_theme(String const& theme_path, String const& theme_name, bool keep_desktop_background)
+Messages::WindowServer::SetSystemThemeResponse ConnectionFromClient::set_system_theme(UTF8String const& theme_path, UTF8String const& theme_name, bool keep_desktop_background)
 {
     bool success = WindowManager::the().update_theme(theme_path, theme_name, keep_desktop_background);
     return success;
@@ -872,7 +872,7 @@ Messages::WindowServer::SetSystemThemeResponse ConnectionFromClient::set_system_
 Messages::WindowServer::GetSystemThemeResponse ConnectionFromClient::get_system_theme()
 {
     auto wm_config = Core::ConfigFile::open("/etc/WindowServer.ini").release_value_but_fixme_should_propagate_errors();
-    auto name = wm_config->read_entry("Theme", "Name");
+    auto name = MUST(UTF8String::from_ak_string(wm_config->read_entry("Theme", "Name")));
     return name;
 }
 

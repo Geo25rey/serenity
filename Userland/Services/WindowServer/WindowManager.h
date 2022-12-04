@@ -197,7 +197,7 @@ public:
         return nullptr;
     }
 
-    bool update_theme(String theme_path, String theme_name, bool keep_desktop_background);
+    bool update_theme(UTF8String theme_path, UTF8String theme_name, bool keep_desktop_background);
     void invalidate_after_theme_or_font_change();
 
     bool set_theme_override(Core::AnonymousBuffer const& theme_override);

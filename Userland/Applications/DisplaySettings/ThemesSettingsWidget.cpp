@@ -77,7 +77,7 @@ ThemesSettingsWidget::ThemesSettingsWidget(bool& background_settings_changed)
 void ThemesSettingsWidget::apply_settings()
 {
     if (m_selected_theme && m_selected_theme->name != GUI::ConnectionToWindowServer::the().get_system_theme())
-        VERIFY(GUI::ConnectionToWindowServer::the().set_system_theme(m_selected_theme->path, m_selected_theme->name, m_background_settings_changed));
+        VERIFY(GUI::ConnectionToWindowServer::the().set_system_theme(MUST(UTF8String::from_ak_string(m_selected_theme->path)), MUST(UTF8String::from_ak_string(m_selected_theme->name)), m_background_settings_changed));
     m_background_settings_changed = false;
 }
 

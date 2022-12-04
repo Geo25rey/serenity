@@ -236,7 +236,7 @@ ErrorOr<NonnullRefPtr<GUI::Menu>> build_system_menu(GUI::Window& window)
             auto action = GUI::Action::create_checkable(theme.name, [theme_identifier](auto&) {
                 auto& theme = g_themes[theme_identifier];
                 dbgln("Theme switched to {} at path {}", theme.name, theme.path);
-                auto success = GUI::ConnectionToWindowServer::the().set_system_theme(theme.path, theme.name, false);
+                auto success = GUI::ConnectionToWindowServer::the().set_system_theme(MUST(UTF8String::from_ak_string(theme.path)), MUST(UTF8String::from_ak_string(theme.name)), false);
                 VERIFY(success);
             });
             if (theme.name == current_theme_name)

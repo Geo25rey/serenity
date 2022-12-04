@@ -145,7 +145,7 @@ private:
     virtual void set_window_icon_bitmap(i32, Gfx::ShareableBitmap const&) override;
     virtual Messages::WindowServer::StartDragResponse start_drag(UTF8String const&, HashMap<String, ByteBuffer> const&, Gfx::ShareableBitmap const&) override;
     virtual void set_accepts_drag(bool) override;
-    virtual Messages::WindowServer::SetSystemThemeResponse set_system_theme(String const&, String const&, bool keep_desktop_background) override;
+    virtual Messages::WindowServer::SetSystemThemeResponse set_system_theme(UTF8String const&, UTF8String const&, bool keep_desktop_background) override;
     virtual Messages::WindowServer::GetSystemThemeResponse get_system_theme() override;
     virtual Messages::WindowServer::SetSystemThemeOverrideResponse set_system_theme_override(Core::AnonymousBuffer const&) override;
     virtual Messages::WindowServer::GetSystemThemeOverrideResponse get_system_theme_override() override;

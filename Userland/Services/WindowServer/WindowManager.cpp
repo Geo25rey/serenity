@@ -2048,15 +2048,15 @@ void WindowManager::invalidate_after_theme_or_font_change()
     Compositor::the().invalidate_after_theme_or_font_change();
 }
 
-bool WindowManager::update_theme(String theme_path, String theme_name, bool keep_desktop_background)
+bool WindowManager::update_theme(UTF8String theme_path, UTF8String theme_name, bool keep_desktop_background)
 {
-    auto new_theme = Gfx::load_system_theme(theme_path);
+    auto new_theme = Gfx::load_system_theme(theme_path.to_ak_string());
     if (!new_theme.is_valid())
         return false;
     m_theme_overridden = false;
     Gfx::set_system_theme(new_theme);
     m_palette = Gfx::PaletteImpl::create_with_anonymous_buffer(new_theme);
-    m_config->write_entry("Theme", "Name", theme_name);
+    m_config->write_entry("Theme", "Name", theme_name.to_ak_string());
     if (!keep_desktop_background)
         m_config->remove_entry("Background", "Color");
     if (!sync_config_to_disk())
