@@ -46,7 +46,7 @@ void Desktop::set_background_color(StringView background_color)
 
 void Desktop::set_wallpaper_mode(StringView mode)
 {
-    ConnectionToWindowServer::the().async_set_wallpaper_mode(mode);
+    ConnectionToWindowServer::the().async_set_wallpaper_mode(MUST(UTF8String::from_ak_string(mode)));
 }
 
 String Desktop::wallpaper_path() const

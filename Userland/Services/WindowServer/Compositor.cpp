@@ -799,7 +799,7 @@ bool Compositor::set_background_color(StringView background_color)
     return succeeded;
 }
 
-bool Compositor::set_wallpaper_mode(String const& mode)
+bool Compositor::set_wallpaper_mode(StringView mode)
 {
     auto& wm = WindowManager::the();
     wm.config()->write_entry("Background", "Mode", mode);

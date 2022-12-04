@@ -130,7 +130,7 @@ private:
     virtual void set_forced_shadow(i32, bool) override;
     virtual Messages::WindowServer::SetWallpaperResponse set_wallpaper(Gfx::ShareableBitmap const&) override;
     virtual void set_background_color(UTF8String const&) override;
-    virtual void set_wallpaper_mode(String const&) override;
+    virtual void set_wallpaper_mode(UTF8String const&) override;
     virtual Messages::WindowServer::GetWallpaperResponse get_wallpaper() override;
     virtual Messages::WindowServer::SetScreenLayoutResponse set_screen_layout(ScreenLayout const&, bool) override;
     virtual Messages::WindowServer::GetScreenLayoutResponse get_screen_layout() override;

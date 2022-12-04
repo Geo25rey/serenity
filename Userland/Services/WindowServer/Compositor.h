@@ -107,7 +107,7 @@ public:
 
     bool set_background_color(StringView);
 
-    bool set_wallpaper_mode(String const& mode);
+    bool set_wallpaper_mode(StringView);
 
     bool set_wallpaper(RefPtr<Gfx::Bitmap>);
     RefPtr<Gfx::Bitmap> wallpaper_bitmap() const { return m_wallpaper; }

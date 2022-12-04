@@ -320,9 +320,9 @@ void ConnectionFromClient::set_background_color(UTF8String const& background_col
     Compositor::the().set_background_color(background_color.bytes_as_string_view());
 }
 
-void ConnectionFromClient::set_wallpaper_mode(String const& mode)
+void ConnectionFromClient::set_wallpaper_mode(UTF8String const& mode)
 {
-    Compositor::the().set_wallpaper_mode(mode);
+    Compositor::the().set_wallpaper_mode(mode.bytes_as_string_view());
 }
 
 Messages::WindowServer::GetWallpaperResponse ConnectionFromClient::get_wallpaper()
