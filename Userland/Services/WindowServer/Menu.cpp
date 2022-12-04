@@ -25,13 +25,13 @@
 
 namespace WindowServer {
 
-u32 find_ampersand_shortcut_character(StringView string)
+u32 find_ampersand_shortcut_character(UTF8String const& string)
 {
-    Utf8View utf8_view { string };
-    for (auto it = utf8_view.begin(); it != utf8_view.end(); ++it) {
+    auto code_points = string.code_points();
+    for (auto it = code_points.begin(); it != code_points.end(); ++it) {
         if (*it == '&') {
             ++it;
-            if (it != utf8_view.end() && *it != '&')
+            if (it != code_points.end() && *it != '&')
                 return *it;
         }
     }
@@ -44,7 +44,7 @@ Menu::Menu(ConnectionFromClient* client, int menu_id, UTF8String name)
     , m_menu_id(menu_id)
     , m_name(move(name))
 {
-    m_alt_shortcut_character = find_ampersand_shortcut_character(m_name.bytes_as_string_view());
+    m_alt_shortcut_character = find_ampersand_shortcut_character(m_name);
 }
 
 Gfx::Font const& Menu::font() const
@@ -697,7 +697,7 @@ void Menu::update_alt_shortcuts_for_items()
     m_alt_shortcut_character_to_item_indices.clear();
     int i = 0;
     for (auto& item : m_items) {
-        if (auto alt_shortcut = find_ampersand_shortcut_character(item.text().bytes_as_string_view())) {
+        if (auto alt_shortcut = find_ampersand_shortcut_character(item.text())) {
             m_alt_shortcut_character_to_item_indices.ensure(to_ascii_lowercase(alt_shortcut)).append(i);
         }
         ++i;
