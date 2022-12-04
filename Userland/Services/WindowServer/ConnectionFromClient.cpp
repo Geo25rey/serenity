@@ -315,9 +315,9 @@ Messages::WindowServer::SetWallpaperResponse ConnectionFromClient::set_wallpaper
     return Compositor::the().set_wallpaper(bitmap.bitmap());
 }
 
-void ConnectionFromClient::set_background_color(String const& background_color)
+void ConnectionFromClient::set_background_color(UTF8String const& background_color)
 {
-    Compositor::the().set_background_color(background_color);
+    Compositor::the().set_background_color(background_color.bytes_as_string_view());
 }
 
 void ConnectionFromClient::set_wallpaper_mode(String const& mode)

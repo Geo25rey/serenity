@@ -779,7 +779,7 @@ void Compositor::start_compose_async_timer()
     }
 }
 
-bool Compositor::set_background_color(String const& background_color)
+bool Compositor::set_background_color(StringView background_color)
 {
     auto color = Color::from_string(background_color);
     if (!color.has_value())

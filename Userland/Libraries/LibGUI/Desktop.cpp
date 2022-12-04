@@ -41,7 +41,7 @@ void Desktop::did_receive_screen_rects(Badge<ConnectionToWindowServer>, Vector<G
 
 void Desktop::set_background_color(StringView background_color)
 {
-    ConnectionToWindowServer::the().async_set_background_color(background_color);
+    ConnectionToWindowServer::the().async_set_background_color(MUST(UTF8String::from_ak_string(background_color)));
 }
 
 void Desktop::set_wallpaper_mode(StringView mode)

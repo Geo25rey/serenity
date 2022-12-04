@@ -105,7 +105,7 @@ public:
 
     void screen_resolution_changed();
 
-    bool set_background_color(String const& background_color);
+    bool set_background_color(StringView);
 
     bool set_wallpaper_mode(String const& mode);
 

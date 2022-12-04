@@ -108,7 +108,7 @@ endpoint WindowServer
 
     set_wallpaper(Gfx::ShareableBitmap wallpaper_bitmap) => (bool success)
 
-    set_background_color(String background_color) =|
+    set_background_color(UTF8String background_color) =|
     set_wallpaper_mode(String mode) =|
 
     set_screen_layout(::WindowServer::ScreenLayout screen_layout, bool save) => (bool success, String error_msg)
