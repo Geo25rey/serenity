@@ -18,7 +18,7 @@ endpoint WindowServer
         bool checkable,
         bool checked,
         bool is_default,
-        [UTF8] String shortcut,
+        UTF8String shortcut,
         Gfx::ShareableBitmap icon,
         bool exclusive) =|
 
@@ -33,7 +33,7 @@ endpoint WindowServer
         bool checkable,
         bool checked,
         bool is_default,
-        [UTF8] String shortcut,
+        UTF8String shortcut,
         Gfx::ShareableBitmap icon) =|
 
     remove_menu_item(i32 menu_id, i32 identifier) =|

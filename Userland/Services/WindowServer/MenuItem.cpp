@@ -12,7 +12,7 @@
 
 namespace WindowServer {
 
-MenuItem::MenuItem(Menu& menu, unsigned identifier, UTF8String text, String const& shortcut_text, bool enabled, bool checkable, bool checked, Gfx::Bitmap const* icon)
+MenuItem::MenuItem(Menu& menu, unsigned identifier, UTF8String text, UTF8String shortcut_text, bool enabled, bool checkable, bool checked, Gfx::Bitmap const* icon)
     : m_menu(menu)
     , m_type(Text)
     , m_enabled(enabled)
@@ -20,7 +20,7 @@ MenuItem::MenuItem(Menu& menu, unsigned identifier, UTF8String text, String cons
     , m_checked(checked)
     , m_identifier(identifier)
     , m_text(move(text))
-    , m_shortcut_text(shortcut_text)
+    , m_shortcut_text(move(shortcut_text))
     , m_icon(icon)
 {
 }

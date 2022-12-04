@@ -78,7 +78,7 @@ int Menu::content_width() const
         auto& use_font = item.is_default() ? font().bold_variant() : font();
         int text_width = use_font.width(Gfx::parse_ampersand_string(item.text().bytes_as_string_view()));
         if (!item.shortcut_text().is_empty()) {
-            int shortcut_width = use_font.width(item.shortcut_text());
+            int shortcut_width = use_font.width(item.shortcut_text().bytes_as_string_view());
             widest_shortcut = max(shortcut_width, widest_shortcut);
         }
         widest_text = max(widest_text, text_width);
@@ -272,7 +272,7 @@ void Menu::draw(MenuItem const& item, bool is_drawing_all)
             painter.set_font(previous_font.bold_variant());
         painter.draw_ui_text(text_rect, item.text().bytes_as_string_view(), painter.font(), Gfx::TextAlignment::CenterLeft, text_color);
         if (!item.shortcut_text().is_empty()) {
-            painter.draw_text(item.rect().translated(-right_padding(), 0), item.shortcut_text(), Gfx::TextAlignment::CenterRight, text_color);
+            painter.draw_text(item.rect().translated(-right_padding(), 0), item.shortcut_text().bytes_as_string_view(), Gfx::TextAlignment::CenterRight, text_color);
         }
         painter.set_font(previous_font);
         if (item.is_submenu()) {
