@@ -76,7 +76,7 @@ int Menu::content_width() const
         if (item.type() != MenuItem::Text)
             continue;
         auto& use_font = item.is_default() ? font().bold_variant() : font();
-        int text_width = use_font.width(Gfx::parse_ampersand_string(item.text()));
+        int text_width = use_font.width(Gfx::parse_ampersand_string(item.text().bytes_as_string_view()));
         if (!item.shortcut_text().is_empty()) {
             int shortcut_width = use_font.width(item.shortcut_text());
             widest_shortcut = max(shortcut_width, widest_shortcut);
@@ -270,7 +270,7 @@ void Menu::draw(MenuItem const& item, bool is_drawing_all)
         auto& previous_font = painter.font();
         if (item.is_default())
             painter.set_font(previous_font.bold_variant());
-        painter.draw_ui_text(text_rect, item.text(), painter.font(), Gfx::TextAlignment::CenterLeft, text_color);
+        painter.draw_ui_text(text_rect, item.text().bytes_as_string_view(), painter.font(), Gfx::TextAlignment::CenterLeft, text_color);
         if (!item.shortcut_text().is_empty()) {
             painter.draw_text(item.rect().translated(-right_padding(), 0), item.shortcut_text(), Gfx::TextAlignment::CenterRight, text_color);
         }
@@ -697,7 +697,7 @@ void Menu::update_alt_shortcuts_for_items()
     m_alt_shortcut_character_to_item_indices.clear();
     int i = 0;
     for (auto& item : m_items) {
-        if (auto alt_shortcut = find_ampersand_shortcut_character(item.text())) {
+        if (auto alt_shortcut = find_ampersand_shortcut_character(item.text().bytes_as_string_view())) {
             m_alt_shortcut_character_to_item_indices.ensure(to_ascii_lowercase(alt_shortcut)).append(i);
         }
         ++i;

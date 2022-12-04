@@ -127,7 +127,7 @@ void ConnectionFromClient::add_menu(i32 window_id, i32 menu_id)
 }
 
 void ConnectionFromClient::add_menu_item(i32 menu_id, i32 identifier, i32 submenu_id,
-    String const& text, bool enabled, bool checkable, bool checked, bool is_default,
+    UTF8String const& text, bool enabled, bool checkable, bool checked, bool is_default,
     String const& shortcut, Gfx::ShareableBitmap const& icon, bool exclusive)
 {
     auto it = m_menus.find(menu_id);
@@ -172,7 +172,7 @@ void ConnectionFromClient::dismiss_menu(i32 menu_id)
 }
 
 void ConnectionFromClient::update_menu_item(i32 menu_id, i32 identifier, [[maybe_unused]] i32 submenu_id,
-    String const& text, bool enabled, bool checkable, bool checked, bool is_default,
+    UTF8String const& text, bool enabled, bool checkable, bool checked, bool is_default,
     String const& shortcut, Gfx::ShareableBitmap const& icon)
 {
     auto it = m_menus.find(menu_id);

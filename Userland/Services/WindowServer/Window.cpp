@@ -226,10 +226,10 @@ void Window::update_window_menu_items()
     if (!m_window_menu)
         return;
 
-    m_window_menu_minimize_item->set_text(m_minimized_state != WindowMinimizedState::None ? "&Unminimize" : "Mi&nimize");
+    m_window_menu_minimize_item->set_text(m_minimized_state != WindowMinimizedState::None ? MUST(UTF8String::from_utf8("&Unminimize"sv)) : MUST(UTF8String::from_utf8("Mi&nimize"sv)));
     m_window_menu_minimize_item->set_enabled(m_minimizable && !is_modal());
 
-    m_window_menu_maximize_item->set_text(is_maximized() ? "&Restore" : "Ma&ximize");
+    m_window_menu_maximize_item->set_text(is_maximized() ? MUST(UTF8String::from_utf8("&Restore"sv)) : MUST(UTF8String::from_utf8("Ma&ximize"sv)));
     m_window_menu_maximize_item->set_enabled(m_resizable);
 
     m_window_menu_close_item->set_enabled(m_closeable);
@@ -704,22 +704,22 @@ void Window::ensure_window_menu()
         m_window_menu = Menu::construct(nullptr, -1, MUST(UTF8String::from_utf8("(Window Menu)"sv)));
         m_window_menu->set_window_menu_of(*this);
 
-        auto minimize_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::MinimizeOrUnminimize, "");
+        auto minimize_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::MinimizeOrUnminimize, UTF8String {});
         m_window_menu_minimize_item = minimize_item.ptr();
         m_window_menu->add_item(move(minimize_item));
 
-        auto maximize_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::MaximizeOrRestore, "");
+        auto maximize_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::MaximizeOrRestore, UTF8String {});
         m_window_menu_maximize_item = maximize_item.ptr();
         m_window_menu->add_item(move(maximize_item));
 
-        auto move_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::Move, "&Move");
+        auto move_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::Move, MUST(UTF8String::from_utf8("&Move"sv)));
         m_window_menu_move_item = move_item.ptr();
         m_window_menu_move_item->set_icon(&move_icon());
         m_window_menu->add_item(move(move_item));
 
         m_window_menu->add_item(make<MenuItem>(*m_window_menu, MenuItem::Type::Separator));
 
-        auto menubar_visibility_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::ToggleMenubarVisibility, "Menu &Bar");
+        auto menubar_visibility_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::ToggleMenubarVisibility, MUST(UTF8String::from_utf8("Menu &Bar"sv)));
         m_window_menu_menubar_visibility_item = menubar_visibility_item.ptr();
         menubar_visibility_item->set_checkable(true);
         m_window_menu->add_item(move(menubar_visibility_item));
@@ -727,7 +727,7 @@ void Window::ensure_window_menu()
         m_window_menu->add_item(make<MenuItem>(*m_window_menu, MenuItem::Type::Separator));
 
         if (!is_modal()) {
-            auto pin_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::ToggleAlwaysOnTop, "Always on &Top");
+            auto pin_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::ToggleAlwaysOnTop, MUST(UTF8String::from_utf8("Always on &Top"sv)));
             m_window_menu_always_on_top_item = pin_item.ptr();
             m_window_menu_always_on_top_item->set_icon(&pin_icon());
             m_window_menu_always_on_top_item->set_checkable(true);
@@ -735,7 +735,7 @@ void Window::ensure_window_menu()
             m_window_menu->add_item(make<MenuItem>(*m_window_menu, MenuItem::Type::Separator));
         }
 
-        auto close_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::Close, "&Close");
+        auto close_item = make<MenuItem>(*m_window_menu, (unsigned)WindowMenuAction::Close, MUST(UTF8String::from_utf8("&Close"sv)));
         m_window_menu_close_item = close_item.ptr();
         m_window_menu_close_item->set_icon(&close_icon());
         m_window_menu_close_item->set_default(true);
