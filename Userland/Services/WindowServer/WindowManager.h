@@ -82,7 +82,7 @@ public:
     ConnectionFromClient const* dnd_client() const { return m_dnd_client.ptr(); }
     Core::MimeData const& dnd_mime_data() const { return *m_dnd_mime_data; }
 
-    void start_dnd_drag(ConnectionFromClient&, String const& text, Gfx::Bitmap const*, Core::MimeData const&);
+    void start_dnd_drag(ConnectionFromClient&, UTF8String text, Gfx::Bitmap const*, Core::MimeData const&);
     void end_dnd_drag();
 
     void set_accepts_drag(bool);
@@ -469,7 +469,7 @@ private:
 
     OwnPtr<DndOverlay> m_dnd_overlay;
     WeakPtr<ConnectionFromClient> m_dnd_client;
-    String m_dnd_text;
+    UTF8String m_dnd_text;
     bool m_dnd_accepts_drag { false };
 
     RefPtr<Core::MimeData> m_dnd_mime_data;

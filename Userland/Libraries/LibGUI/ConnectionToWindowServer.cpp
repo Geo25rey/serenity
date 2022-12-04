@@ -349,11 +349,11 @@ void ConnectionToWindowServer::applet_area_rect_changed(Gfx::IntRect const& rect
     });
 }
 
-void ConnectionToWindowServer::drag_dropped(i32 window_id, Gfx::IntPoint const& mouse_position, String const& text, HashMap<String, ByteBuffer> const& mime_data)
+void ConnectionToWindowServer::drag_dropped(i32 window_id, Gfx::IntPoint const& mouse_position, UTF8String const& text, HashMap<String, ByteBuffer> const& mime_data)
 {
     if (auto* window = Window::from_window_id(window_id)) {
         auto mime_data_obj = Core::MimeData::construct(mime_data);
-        Core::EventLoop::current().post_event(*window, make<DropEvent>(mouse_position, text, mime_data_obj));
+        Core::EventLoop::current().post_event(*window, make<DropEvent>(mouse_position, text.to_ak_string(), mime_data_obj));
     }
 }
 

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <AK/IntrusiveList.h>
+#include <AK/UTF8String.h>
 #include <AK/Vector.h>
 #include <AK/WeakPtr.h>
 #include <LibGfx/Painter.h>
@@ -151,7 +152,7 @@ private:
 
 class DndOverlay : public BitmapOverlay {
 public:
-    DndOverlay(String const&, Gfx::Bitmap const*);
+    DndOverlay(UTF8String, Gfx::Bitmap const*);
 
     void cursor_moved()
     {
@@ -166,7 +167,7 @@ private:
     void update_rect();
 
     RefPtr<Gfx::Bitmap> m_bitmap;
-    String m_text;
+    UTF8String m_text;
     Gfx::IntRect m_label_rect;
 };
 

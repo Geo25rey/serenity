@@ -35,7 +35,7 @@ DragOperation::Outcome DragOperation::exec()
     }
 
     auto started = ConnectionToWindowServer::the().start_drag(
-        m_mime_data->text(),
+        MUST(UTF8String::from_ak_string(m_mime_data->text())),
         m_mime_data->all_data(),
         drag_bitmap);
 

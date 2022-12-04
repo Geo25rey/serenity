@@ -846,7 +846,7 @@ void ConnectionFromClient::start_window_resize(i32 window_id, i32 resize_directi
     WindowManager::the().start_window_resize(window, ScreenInput::the().cursor_location(), MouseButton::Primary, (ResizeDirection)resize_direction);
 }
 
-Messages::WindowServer::StartDragResponse ConnectionFromClient::start_drag(String const& text, HashMap<String, ByteBuffer> const& mime_data, Gfx::ShareableBitmap const& drag_bitmap)
+Messages::WindowServer::StartDragResponse ConnectionFromClient::start_drag(UTF8String const& text, HashMap<String, ByteBuffer> const& mime_data, Gfx::ShareableBitmap const& drag_bitmap)
 {
     auto& wm = WindowManager::the();
     if (wm.dnd_client() || !(wm.last_processed_buttons() & MouseButton::Primary))

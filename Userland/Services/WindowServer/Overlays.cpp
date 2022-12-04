@@ -273,9 +273,9 @@ void WindowGeometryOverlay::window_rect_changed()
     invalidate_content();
 }
 
-DndOverlay::DndOverlay(String const& text, Gfx::Bitmap const* bitmap)
+DndOverlay::DndOverlay(UTF8String text, Gfx::Bitmap const* bitmap)
     : m_bitmap(bitmap)
-    , m_text(text)
+    , m_text(move(text))
 {
     update_rect();
 }
@@ -290,7 +290,7 @@ void DndOverlay::update_rect()
     int bitmap_width = m_bitmap ? m_bitmap->width() : 0;
     int bitmap_height = m_bitmap ? m_bitmap->height() : 0;
     auto& font = this->font();
-    int width = font.width(m_text) + bitmap_width;
+    int width = font.width(m_text.bytes_as_string_view()) + bitmap_width;
     int height = max((int)font.glyph_height(), bitmap_height);
     auto location = ScreenInput::the().cursor_location().translated(8, 8);
     set_rect(Gfx::IntRect(location, { width, height }).inflated(16, 8));
@@ -312,7 +312,7 @@ RefPtr<Gfx::Bitmap> DndOverlay::create_bitmap(int scale_factor)
         auto text_rect = bitmap_rect;
         if (m_bitmap)
             text_rect.translate_by(m_bitmap->width() + 8, 0);
-        bitmap_painter.draw_text(text_rect, m_text, Gfx::TextAlignment::CenterLeft, wm.palette().selection_text());
+        bitmap_painter.draw_text(text_rect, m_text.bytes_as_string_view(), Gfx::TextAlignment::CenterLeft, wm.palette().selection_text());
     }
     if (m_bitmap)
         bitmap_painter.blit(bitmap_rect.top_left().translated(4, 4), *m_bitmap, m_bitmap->rect());
