@@ -7,6 +7,7 @@
 
 #include <LibWeb/CSS/CSSStyleSheet.h>
 #include <LibWeb/CSS/StyleSheet.h>
+#include <LibWeb/DOM/Document.h>
 #include <LibWeb/DOM/Element.h>
 
 namespace Web::CSS {
@@ -33,6 +34,17 @@ void StyleSheet::set_owner_node(DOM::Element* element)
 void StyleSheet::set_parent_css_style_sheet(CSSStyleSheet* parent)
 {
     m_parent_style_sheet = parent;
+}
+
+void StyleSheet::set_disabled(bool disabled)
+{
+    if (m_disabled == disabled)
+        return;
+    m_disabled = disabled;
+    if (m_owner_node) {
+        m_owner_node->document().style_computer().invalidate_rule_cache();
+        m_owner_node->document().invalidate_style();
+    }
 }
 
 }
