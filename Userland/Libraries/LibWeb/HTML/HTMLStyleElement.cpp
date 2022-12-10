@@ -167,4 +167,31 @@ CSS::CSSStyleSheet const* HTMLStyleElement::sheet() const
     return m_associated_css_style_sheet;
 }
 
+// https://html.spec.whatwg.org/multipage/semantics.html#dom-style-disabled
+bool HTMLStyleElement::disabled() const
+{
+    // 1. If this does not have an associated CSS style sheet, return false.
+    if (!m_associated_css_style_sheet)
+        return false;
+
+    // 2. If this's associated CSS style sheet's disabled flag is set, return true.
+    if (m_associated_css_style_sheet->disabled())
+        return true;
+
+    // 3. Return false.
+    return false;
+}
+
+// https://html.spec.whatwg.org/multipage/semantics.html#dom-style-disabled
+void HTMLStyleElement::set_disabled(bool disabled)
+{
+    // 1. If this does not have an associated CSS style sheet, return.
+    if (!m_associated_css_style_sheet)
+        return;
+
+    // 2. If the given value is true, set this's associated CSS style sheet's disabled flag.
+    //    Otherwise, unset this's associated CSS style sheet's disabled flag.
+    m_associated_css_style_sheet->set_disabled(disabled);
+}
+
 }

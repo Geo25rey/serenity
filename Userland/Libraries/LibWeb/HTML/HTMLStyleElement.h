@@ -26,6 +26,9 @@ public:
     CSS::CSSStyleSheet* sheet();
     CSS::CSSStyleSheet const* sheet() const;
 
+    bool disabled() const;
+    void set_disabled(bool);
+
 private:
     HTMLStyleElement(DOM::Document&, DOM::QualifiedName);
 
