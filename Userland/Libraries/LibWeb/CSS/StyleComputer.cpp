@@ -143,6 +143,8 @@ void StyleComputer::for_each_stylesheet(CascadeOrigin cascade_origin, Callback c
     }
     if (cascade_origin == CascadeOrigin::Author) {
         for (auto const& sheet : document().style_sheets().sheets()) {
+            if (sheet->disabled())
+                continue;
             callback(*sheet);
         }
     }
