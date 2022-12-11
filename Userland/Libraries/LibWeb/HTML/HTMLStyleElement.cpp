@@ -45,7 +45,7 @@ void HTMLStyleElement::removed_from(Node* old_parent)
 }
 
 // https://www.w3.org/TR/cssom/#remove-a-css-style-sheet
-static void remove_a_css_style_sheet(DOM::Document& document, CSS::CSSStyleSheet& sheet)
+void remove_a_css_style_sheet(DOM::Document& document, CSS::CSSStyleSheet& sheet)
 {
     // 1. Remove the CSS style sheet from the list of document or shadow root CSS style sheets.
     document.style_sheets().remove_sheet(sheet);
@@ -77,7 +77,7 @@ static void add_a_css_style_sheet(DOM::Document& document, CSS::CSSStyleSheet& s
 }
 
 // https://www.w3.org/TR/cssom/#create-a-css-style-sheet
-static void create_a_css_style_sheet(DOM::Document& document, DeprecatedString type, DOM::Element* owner_node, DeprecatedString media, DeprecatedString title, bool alternate, bool origin_clean, DeprecatedString location, CSS::CSSStyleSheet* parent_style_sheet, CSS::CSSRule* owner_rule, CSS::CSSStyleSheet& sheet)
+void create_a_css_style_sheet(DOM::Document& document, DeprecatedString type, DOM::Element* owner_node, DeprecatedString media, DeprecatedString title, bool alternate, bool origin_clean, DeprecatedString location, CSS::CSSStyleSheet* parent_style_sheet, CSS::CSSRule* owner_rule, CSS::CSSStyleSheet& sheet)
 {
     // 1. Create a new CSS style sheet object and set its properties as specified.
     // FIXME: We receive `sheet` from the caller already. This is weird.

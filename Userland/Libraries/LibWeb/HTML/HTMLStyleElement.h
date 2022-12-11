@@ -38,4 +38,7 @@ private:
     JS::GCPtr<CSS::CSSStyleSheet> m_associated_css_style_sheet;
 };
 
+void create_a_css_style_sheet(DOM::Document&, DeprecatedString type, DOM::Element* owner_node, DeprecatedString media, DeprecatedString title, bool alternate, bool origin_clean, DeprecatedString location, CSS::CSSStyleSheet* parent_style_sheet, CSS::CSSRule* owner_rule, CSS::CSSStyleSheet&);
+void remove_a_css_style_sheet(DOM::Document&, CSS::CSSStyleSheet&);
+
 }
