@@ -9,9 +9,14 @@
 #pragma once
 
 #include <LibWeb/DOM/DocumentLoadEventDelayer.h>
+#include <LibWeb/Fetch/Infrastructure/FetchAlgorithms.h>
+#include <LibWeb/Fetch/Infrastructure/HTTP/Requests.h>
 #include <LibWeb/HTML/HTMLElement.h>
+#include <LibWeb/ReferrerPolicy/ReferrerPolicy.h>
 
 namespace Web::HTML {
+
+struct LinkProcessingOptions;
 
 class HTMLLinkElement final
     : public HTMLElement
@@ -33,6 +38,16 @@ public:
 private:
     HTMLLinkElement(DOM::Document&, DOM::QualifiedName);
 
+    LinkProcessingOptions create_link_options();
+    JS::GCPtr<Fetch::Infrastructure::Request> create_link_request(LinkProcessingOptions const&);
+
+    void fetch_and_process_the_linked_resource();
+    void default_fetch_and_process_the_linked_resource();
+
+    void process_linked_resource(bool success, JS::NonnullGCPtr<Fetch::Infrastructure::Response> response, Variant<Empty, Fetch::Infrastructure::FetchAlgorithms::ConsumeBodyFailureTag, ByteBuffer> body_bytes, AK::URL request_url);
+
+    void process_linked_stylesheet_resource(bool success, JS::NonnullGCPtr<Fetch::Infrastructure::Response> response, Variant<Empty, Fetch::Infrastructure::FetchAlgorithms::ConsumeBodyFailureTag, ByteBuffer> body_bytes, AK::URL request_url);
+
     void parse_attribute(FlyString const&, DeprecatedString const&) override;
 
     // ^ResourceClient
@@ -43,7 +58,6 @@ private:
     virtual void did_remove_attribute(FlyString const&) override;
     virtual void visit_edges(Cell::Visitor&) override;
 
-    void resource_did_load_stylesheet();
     void resource_did_load_favicon();
 
     struct Relationship {
@@ -58,7 +72,7 @@ private:
     };
 
     RefPtr<Resource> m_preload_resource;
-    JS::GCPtr<CSS::CSSStyleSheet> m_loaded_style_sheet;
+    JS::GCPtr<CSS::CSSStyleSheet> m_associated_css_style_sheet;
 
     Optional<DOM::DocumentLoadEventDelayer> m_document_load_event_delayer;
     unsigned m_relationship { 0 };
