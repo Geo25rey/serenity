@@ -49,6 +49,8 @@ namespace Web::Fetch::Fetching {
         _temporary_result.release_value();     \
     })
 
+static WebIDL::ExceptionOr<JS::NonnullGCPtr<PendingResponse>> file_fetch(JS::Realm&, Infrastructure::FetchParams const&);
+
 // https://fetch.spec.whatwg.org/#concept-fetch
 WebIDL::ExceptionOr<JS::NonnullGCPtr<Infrastructure::FetchController>> fetch(JS::Realm& realm, Infrastructure::Request& request, Infrastructure::FetchAlgorithms const& algorithms, UseParallelQueue use_parallel_queue)
 {
@@ -718,8 +720,7 @@ WebIDL::ExceptionOr<JS::NonnullGCPtr<PendingResponse>> scheme_fetch(JS::Realm& r
     else if (request->current_url().scheme() == "file"sv) {
         // For now, unfortunate as it is, file: URLs are left as an exercise for the reader.
         // When in doubt, return a network error.
-        // FIXME: Support 'file://' URLs
-        return PendingResponse::create(vm, request, Infrastructure::Response::network_error(vm, "Request has 'file:' URL which is currently unsupported"sv));
+        return file_fetch(realm, fetch_params);
     }
     // -> HTTP(S) scheme
     else if (Infrastructure::is_http_or_https_scheme(request->current_url().scheme())) {
@@ -1631,4 +1632,42 @@ WebIDL::ExceptionOr<JS::NonnullGCPtr<PendingResponse>> nonstandard_resource_load
     return pending_response;
 }
 
+// Non-standard: This implements a simple fetch for file:// URLs.
+WebIDL::ExceptionOr<JS::NonnullGCPtr<PendingResponse>> file_fetch(JS::Realm& realm, Infrastructure::FetchParams const& fetch_params)
+{
+    dbgln_if(WEB_FETCH_DEBUG, "Fetch: Running 'file fetch' with: fetch_params @ {}", &fetch_params);
+
+    auto& vm = realm.vm();
+
+    auto request = fetch_params.request();
+    auto pending_response = PendingResponse::create(vm, request);
+    auto load_request = LoadRequest::create_for_url_on_page(request->url(), nullptr);
+
+    ResourceLoader::the().load(
+        load_request,
+        [&realm, &vm, request, pending_response](auto data, auto& response_headers, auto status_code) {
+            dbgln_if(WEB_FETCH_DEBUG, "Fetch: ResourceLoader load for '{}' complete", request->url());
+            if constexpr (WEB_FETCH_DEBUG)
+                log_response(status_code, response_headers, data);
+            auto [body, _] = MUST(extract_body(realm, data));
+            auto response = Infrastructure::Response::create(vm);
+            response->set_status(status_code.value_or(200));
+            response->set_body(move(body));
+            pending_response->resolve(response);
+        },
+        [&vm, request, pending_response](auto& error, auto status_code) {
+            dbgln_if(WEB_FETCH_DEBUG, "Fetch: ResourceLoader load for '{}' failed: {} (status {})", request->url(), error, status_code.value_or(0));
+            auto response = Infrastructure::Response::create(vm);
+            // FIXME: This is ugly, ResourceLoader should tell us.
+            if (status_code.value_or(0) == 0) {
+                response = Infrastructure::Response::network_error(vm, "File request failed"sv);
+            } else {
+                response->set_status(status_code.value_or(200));
+                // FIXME: Set response status message and body
+            }
+            pending_response->resolve(response);
+        });
+
+    return pending_response;
+}
 }
