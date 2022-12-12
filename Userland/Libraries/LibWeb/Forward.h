@@ -328,6 +328,7 @@ struct PolicyContainer;
 class PromiseRejectionEvent;
 class WorkerDebugConsoleClient;
 struct SandboxingFlagSet;
+struct SessionHistoryEntry;
 class Storage;
 class SubmitEvent;
 class TextMetrics;

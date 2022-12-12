@@ -8,6 +8,7 @@
 
 #include <AK/URL.h>
 #include <AK/WeakPtr.h>
+#include <LibJS/Heap/Cell.h>
 #include <LibWeb/Forward.h>
 #include <LibWeb/HTML/PolicyContainers.h>
 
@@ -25,7 +26,12 @@ enum class ScrollRestorationMode {
 };
 
 // https://html.spec.whatwg.org/multipage/history.html#session-history-entry
-struct SessionHistoryEntry {
+struct SessionHistoryEntry final : public JS::Cell {
+    JS_CELL(SessionHistoryEntry, JS::Cell);
+
+    void visit_edges(Cell::Visitor&) override;
+
+public:
     // URL, a URL
     AK::URL url;
 
