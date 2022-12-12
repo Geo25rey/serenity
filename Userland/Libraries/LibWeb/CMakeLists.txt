@@ -259,6 +259,7 @@ set(SOURCES
     HTML/MessageChannel.cpp
     HTML/MessageEvent.cpp
     HTML/MessagePort.cpp
+    HTML/Navigable.cpp
     HTML/NavigableContainer.cpp
     HTML/Navigator.cpp
     HTML/NavigatorID.cpp

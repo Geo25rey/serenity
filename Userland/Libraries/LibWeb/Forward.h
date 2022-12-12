@@ -319,6 +319,7 @@ class ImageData;
 class MessageChannel;
 class MessageEvent;
 class MessagePort;
+class Navigable;
 struct NavigationParams;
 class Navigator;
 class Origin;
