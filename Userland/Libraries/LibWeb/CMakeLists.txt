@@ -289,6 +289,7 @@ set(SOURCES
     HTML/TagNames.cpp
     HTML/TextMetrics.cpp
     HTML/Timer.cpp
+    HTML/TraversableNavigable.cpp
     HTML/Window.cpp
     HTML/WindowEventHandlers.cpp
     HTML/WindowProxy.cpp

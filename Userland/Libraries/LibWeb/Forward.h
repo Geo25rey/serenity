@@ -334,6 +334,7 @@ class Storage;
 class SubmitEvent;
 class TextMetrics;
 class Timer;
+class TraversableNavigable;
 class Window;
 class WindowEnvironmentSettingsObject;
 class WindowProxy;
