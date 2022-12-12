@@ -8,6 +8,7 @@
 #include <LibWeb/HTML/BrowsingContext.h>
 #include <LibWeb/HTML/Navigable.h>
 #include <LibWeb/HTML/SessionHistoryEntry.h>
+#include <LibWeb/HTML/TraversableNavigable.h>
 
 namespace Web::HTML {
 
@@ -117,6 +118,20 @@ JS::GCPtr<NavigableContainer> Navigable::container() const
 void Navigable::set_container(JS::GCPtr<NavigableContainer> container)
 {
     m_container = container;
+}
+
+// https://html.spec.whatwg.org/multipage/document-sequences.html#nav-traversable
+JS::GCPtr<TraversableNavigable> Navigable::traversable_navigable()
+{
+    // 1. Let navigable be inputNavigable.
+    auto navigable = this;
+
+    // 2. While navigable is not a traversable navigable, set navigable to navigable's parent.
+    while (navigable && !is<TraversableNavigable>(*navigable))
+        navigable = navigable->parent();
+
+    // 3. Return navigable.
+    return static_cast<TraversableNavigable*>(navigable);
 }
 
 }
