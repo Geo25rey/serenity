@@ -176,9 +176,9 @@ void run_focusing_steps(DOM::Node* new_focus_target, DOM::Node* fallback_target,
 
     // 3. If new focus target is a browsing context container with non-null nested browsing context,
     //    then set new focus target to the nested browsing context's active document.
-    if (is<HTML::BrowsingContextContainer>(*new_focus_target)) {
-        auto& browsing_context_container = static_cast<HTML::BrowsingContextContainer&>(*new_focus_target);
-        if (auto* nested_browsing_context = browsing_context_container.nested_browsing_context())
+    if (is<HTML::NavigableContainer>(*new_focus_target)) {
+        auto& navigable_container = static_cast<HTML::NavigableContainer&>(*new_focus_target);
+        if (auto* nested_browsing_context = navigable_container.nested_browsing_context())
             new_focus_target = nested_browsing_context->active_document();
     }
 

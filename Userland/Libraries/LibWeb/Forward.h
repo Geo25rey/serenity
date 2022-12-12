@@ -227,7 +227,7 @@ class DOMRectReadOnly;
 
 namespace Web::HTML {
 class BrowsingContext;
-class BrowsingContextContainer;
+class NavigableContainer;
 class BrowsingContextGroup;
 class CanvasRenderingContext2D;
 class ClassicScript;

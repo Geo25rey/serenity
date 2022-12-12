@@ -10,12 +10,12 @@
 #include <LibWeb/DOM/HTMLCollection.h>
 #include <LibWeb/Fetch/Infrastructure/HTTP/Requests.h>
 #include <LibWeb/HTML/BrowsingContext.h>
-#include <LibWeb/HTML/BrowsingContextContainer.h>
 #include <LibWeb/HTML/BrowsingContextGroup.h>
 #include <LibWeb/HTML/CrossOrigin/CrossOriginOpenerPolicy.h>
 #include <LibWeb/HTML/EventLoop/EventLoop.h>
 #include <LibWeb/HTML/HTMLAnchorElement.h>
 #include <LibWeb/HTML/HTMLInputElement.h>
+#include <LibWeb/HTML/NavigableContainer.h>
 #include <LibWeb/HTML/SandboxingFlagSet.h>
 #include <LibWeb/HTML/Scripting/WindowEnvironmentSettingsObject.h>
 #include <LibWeb/HTML/Window.h>
@@ -82,7 +82,7 @@ JS::NonnullGCPtr<BrowsingContext> BrowsingContext::create_a_new_top_level_browsi
 JS::NonnullGCPtr<BrowsingContext> BrowsingContext::create_a_new_browsing_context(Page& page, JS::GCPtr<DOM::Document> creator, JS::GCPtr<DOM::Element> embedder, BrowsingContextGroup&)
 {
     // 1. Let browsingContext be a new browsing context.
-    BrowsingContextContainer* container = (embedder && is<BrowsingContextContainer>(*embedder)) ? static_cast<BrowsingContextContainer*>(embedder.ptr()) : nullptr;
+    NavigableContainer* container = (embedder && is<NavigableContainer>(*embedder)) ? static_cast<NavigableContainer*>(embedder.ptr()) : nullptr;
     auto browsing_context = Bindings::main_thread_vm().heap().allocate_without_realm<BrowsingContext>(page, container);
 
     // 2. Let unsafeContextCreationTime be the unsafe shared current time.
@@ -220,7 +220,7 @@ JS::NonnullGCPtr<BrowsingContext> BrowsingContext::create_a_new_browsing_context
     return *browsing_context;
 }
 
-BrowsingContext::BrowsingContext(Page& page, HTML::BrowsingContextContainer* container)
+BrowsingContext::BrowsingContext(Page& page, HTML::NavigableContainer* container)
     : m_page(page)
     , m_loader(*this)
     , m_event_handler({}, *this)
@@ -635,9 +635,9 @@ JS::GCPtr<DOM::Node> BrowsingContext::currently_focused_area()
     // 3. While candidate's focused area is a browsing context container with a non-null nested browsing context:
     //    set candidate to the active document of that browsing context container's nested browsing context.
     while (candidate->focused_element()
-        && is<HTML::BrowsingContextContainer>(candidate->focused_element())
-        && static_cast<HTML::BrowsingContextContainer&>(*candidate->focused_element()).nested_browsing_context()) {
-        candidate = static_cast<HTML::BrowsingContextContainer&>(*candidate->focused_element()).nested_browsing_context()->active_document();
+        && is<HTML::NavigableContainer>(candidate->focused_element())
+        && static_cast<HTML::NavigableContainer&>(*candidate->focused_element()).nested_browsing_context()) {
+        candidate = static_cast<HTML::NavigableContainer&>(*candidate->focused_element()).nested_browsing_context()->active_document();
     }
 
     // 4. If candidate's focused area is non-null, set candidate to candidate's focused area.

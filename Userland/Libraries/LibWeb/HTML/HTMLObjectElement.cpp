@@ -17,7 +17,7 @@
 namespace Web::HTML {
 
 HTMLObjectElement::HTMLObjectElement(DOM::Document& document, DOM::QualifiedName qualified_name)
-    : BrowsingContextContainer(document, move(qualified_name))
+    : NavigableContainer(document, move(qualified_name))
 {
     set_prototype(&Bindings::cached_web_prototype(realm(), "HTMLObjectElement"));
 }
@@ -26,7 +26,7 @@ HTMLObjectElement::~HTMLObjectElement() = default;
 
 void HTMLObjectElement::parse_attribute(FlyString const& name, DeprecatedString const& value)
 {
-    BrowsingContextContainer::parse_attribute(name, value);
+    NavigableContainer::parse_attribute(name, value);
 
     if (name == HTML::AttributeNames::data)
         queue_element_task_to_run_object_representation_steps();
@@ -43,7 +43,7 @@ JS::GCPtr<Layout::Node> HTMLObjectElement::create_layout_node(NonnullRefPtr<CSS:
 {
     switch (m_representation) {
     case Representation::Children:
-        return BrowsingContextContainer::create_layout_node(move(style));
+        return NavigableContainer::create_layout_node(move(style));
     case Representation::NestedBrowsingContext:
         // FIXME: Actually paint the nested browsing context's document, similar to how iframes are painted with FrameBox and NestedBrowsingContextPaintable.
         return nullptr;

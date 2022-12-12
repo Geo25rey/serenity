@@ -16,8 +16,8 @@
 #include <LibJS/Forward.h>
 #include <LibJS/Heap/Cell.h>
 #include <LibWeb/DOM/Position.h>
-#include <LibWeb/HTML/BrowsingContextContainer.h>
 #include <LibWeb/HTML/HistoryHandlingBehavior.h>
+#include <LibWeb/HTML/NavigableContainer.h>
 #include <LibWeb/HTML/Origin.h>
 #include <LibWeb/HTML/SessionHistoryEntry.h>
 #include <LibWeb/HTML/VisibilityState.h>
@@ -180,8 +180,8 @@ public:
 
     bool is_child_of(BrowsingContext const&) const;
 
-    HTML::BrowsingContextContainer* container() { return m_container; }
-    HTML::BrowsingContextContainer const* container() const { return m_container; }
+    HTML::NavigableContainer* container() { return m_container; }
+    HTML::NavigableContainer const* container() const { return m_container; }
 
     CSSPixelPoint to_top_level_position(CSSPixelPoint);
     CSSPixelRect to_top_level_rect(CSSPixelRect const&);
@@ -266,7 +266,7 @@ public:
     void close();
 
 private:
-    explicit BrowsingContext(Page&, HTML::BrowsingContextContainer*);
+    explicit BrowsingContext(Page&, HTML::NavigableContainer*);
 
     virtual void visit_edges(Cell::Visitor&) override;
 
@@ -296,7 +296,7 @@ private:
     // https://html.spec.whatwg.org/multipage/browsers.html#creator-origin
     Optional<HTML::Origin> m_creator_origin;
 
-    JS::GCPtr<HTML::BrowsingContextContainer> m_container;
+    JS::GCPtr<HTML::NavigableContainer> m_container;
     Gfx::IntSize m_size;
     Gfx::IntPoint m_viewport_scroll_offset;
 
