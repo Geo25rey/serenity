@@ -236,6 +236,7 @@ struct CrossOriginOpenerPolicy;
 struct CrossOriginOpenerPolicyEnforcementResult;
 class DOMParser;
 class DOMStringMap;
+class DocumentState;
 struct Environment;
 struct EnvironmentSettingsObject;
 class ErrorEvent;
