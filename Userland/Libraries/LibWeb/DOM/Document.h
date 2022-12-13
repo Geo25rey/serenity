@@ -169,6 +169,9 @@ public:
 
     void set_browsing_context(HTML::BrowsingContext*);
 
+    JS::GCPtr<HTML::Navigable> navigable() const;
+    void set_navigable(JS::GCPtr<HTML::Navigable>);
+
     Page* page();
     Page const* page() const;
 
@@ -471,6 +474,8 @@ private:
     JS::GCPtr<Node> m_active_favicon;
     WeakPtr<HTML::BrowsingContext> m_browsing_context;
     AK::URL m_url;
+
+    JS::GCPtr<HTML::Navigable> m_navigable;
 
     JS::GCPtr<HTML::Window> m_window;
 

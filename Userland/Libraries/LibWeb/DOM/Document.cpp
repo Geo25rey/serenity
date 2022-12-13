@@ -334,6 +334,8 @@ void Document::visit_edges(Cell::Visitor& visitor)
 
     visitor.visit(m_browsing_context);
 
+    visitor.visit(m_navigable);
+
     visitor.visit(m_applets);
     visitor.visit(m_anchors);
     visitor.visit(m_images);
@@ -2336,6 +2338,11 @@ JS::NonnullGCPtr<DOM::Document> Document::appropriate_template_contents_owner_do
     }
     // 2. Return doc.
     return *this;
+}
+
+JS::GCPtr<HTML::Navigable> Document::navigable() const
+{
+    return m_navigable;
 }
 
 }
