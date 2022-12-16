@@ -430,4 +430,31 @@ void NavigableContainer::navigate_an_iframe_or_frame(JS::NonnullGCPtr<Fetch::Inf
     MUST(m_nested_browsing_context->navigate(resource, *source_browsing_context, false, history_handling));
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#destroy-the-nested-navigable
+void NavigableContainer::destroy_the_nested_navigable()
+{
+    // 1. Let nestedNavigable be container's nested navigable.
+    auto nested_navigable = this->nested_navigable();
+
+    // 2. If nestedNavigable is null, then return.
+    if (!nested_navigable)
+        return;
+
+    // 3. Set container's nested navigable to null.
+    m_nested_navigable = nullptr;
+
+    // 4. Destroy nestedNavigable's active document.
+    nested_navigable->active_document()->destroy();
+
+    // 5. Let parentDocState be container's node navigable's active session history entry's document state.
+    [[maybe_unused]] auto parent_doc_state = node_navigable()->active_session_history_entry()->document_state;
+
+    // FIXME: 6. Remove the nested history from parentDocState's nested histories whose id equals nestedNavigable's id.
+
+    // 7. Let traversable be container's node navigable's traversable navigable.
+    [[maybe_unused]] auto traversable = node_navigable()->traversable_navigable();
+
+    // FIXME: 8. Append the following session history traversal steps to traversable:
+}
+
 }
