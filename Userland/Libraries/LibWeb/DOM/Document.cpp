@@ -2096,6 +2096,29 @@ HTML::PolicyContainer Document::policy_container() const
     return m_policy_container;
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#ancestor-navigables
+Vector<JS::Handle<HTML::Navigable>> Document::ancestor_navigables()
+{
+    // 1. Let navigable be document's node navigable's parent.
+    VERIFY(node_navigable());
+    JS::GCPtr<HTML::Navigable> navigable = node_navigable()->parent();
+
+    // 2. Let ancestors be an empty list.
+    Vector<JS::Handle<HTML::Navigable>> ancestors;
+
+    // 3. While navigable is not null:
+    while (navigable) {
+        // 1. Prepend navigable to ancestors.
+        ancestors.prepend(*navigable);
+
+        // 2. Set navigable to navigable's parent.
+        navigable = navigable->parent();
+    }
+
+    // 4. Return ancestors.
+    return ancestors;
+}
+
 // https://html.spec.whatwg.org/multipage/document-sequences.html#document-tree-child-navigables
 Vector<JS::Handle<HTML::Navigable>> Document::document_tree_child_navigables()
 {

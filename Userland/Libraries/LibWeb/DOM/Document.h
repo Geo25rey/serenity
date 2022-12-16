@@ -424,6 +424,7 @@ public:
     // https://html.spec.whatwg.org/multipage/browsers.html#list-of-the-descendant-browsing-contexts
     Vector<JS::Handle<HTML::BrowsingContext>> list_of_descendant_browsing_contexts() const;
 
+    Vector<JS::Handle<HTML::Navigable>> ancestor_navigables();
     Vector<JS::Handle<HTML::Navigable>> document_tree_child_navigables();
 
     // https://html.spec.whatwg.org/multipage/window-object.html#discard-a-document
