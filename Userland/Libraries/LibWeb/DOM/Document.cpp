@@ -2096,6 +2096,19 @@ HTML::PolicyContainer Document::policy_container() const
     return m_policy_container;
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#inclusive-ancestor-navigables
+Vector<JS::Handle<HTML::Navigable>> Document::inclusive_ancestor_navigables()
+{
+    // 1. Let navigables be document's ancestor navigables.
+    auto navigables = ancestor_navigables();
+
+    // 2. Append document's node navigable to navigables.
+    navigables.append(*node_navigable());
+
+    // 3. Return navigables.
+    return navigables;
+}
+
 // https://html.spec.whatwg.org/multipage/document-sequences.html#ancestor-navigables
 Vector<JS::Handle<HTML::Navigable>> Document::ancestor_navigables()
 {
