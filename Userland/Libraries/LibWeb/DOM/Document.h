@@ -426,6 +426,8 @@ public:
 
     Vector<JS::Handle<HTML::Navigable>> ancestor_navigables();
     Vector<JS::Handle<HTML::Navigable>> inclusive_ancestor_navigables();
+    Vector<JS::Handle<HTML::Navigable>> descendant_navigables();
+    Vector<JS::Handle<HTML::Navigable>> inclusive_descendant_navigables();
     Vector<JS::Handle<HTML::Navigable>> document_tree_child_navigables();
 
     // https://html.spec.whatwg.org/multipage/window-object.html#discard-a-document

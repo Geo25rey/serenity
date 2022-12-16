@@ -2096,6 +2096,45 @@ HTML::PolicyContainer Document::policy_container() const
     return m_policy_container;
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#descendant-navigables
+Vector<JS::Handle<HTML::Navigable>> Document::descendant_navigables()
+{
+    // 1. Let navigables be new list.
+    Vector<JS::Handle<HTML::Navigable>> navigables;
+
+    // 2. Let navigableContainers be a list of all shadow-including descendants of document that are navigable containers, in shadow-including tree order.
+    // 3. For each navigableContainer of navigableContainers:
+    for_each_shadow_including_descendant([&](DOM::Node& node) {
+        if (is<HTML::NavigableContainer>(node)) {
+            auto& navigable_container = static_cast<HTML::NavigableContainer&>(node);
+            // 1. If navigableContainer's nested navigable is null, continue.
+            if (!navigable_container.nested_navigable())
+                return IterationDecision::Continue;
+
+            // 2. Extend navigables with navigableContainer's nested navigable's active document's inclusive descendant navigables.
+            navigables.extend(navigable_container.nested_navigable()->active_document()->inclusive_descendant_navigables());
+        }
+        return IterationDecision::Continue;
+    });
+
+    // 4. Return navigables.
+    return navigables;
+}
+
+// https://html.spec.whatwg.org/multipage/document-sequences.html#inclusive-descendant-navigables
+Vector<JS::Handle<HTML::Navigable>> Document::inclusive_descendant_navigables()
+{
+    // 1. Let navigables be « document's node navigable ».
+    Vector<JS::Handle<HTML::Navigable>> navigables;
+    navigables.append(*node_navigable());
+
+    // 2. Extend navigables with document's descendant navigables.
+    navigables.extend(descendant_navigables());
+
+    // 3. Return navigables.
+    return navigables;
+}
+
 // https://html.spec.whatwg.org/multipage/document-sequences.html#inclusive-ancestor-navigables
 Vector<JS::Handle<HTML::Navigable>> Document::inclusive_ancestor_navigables()
 {
