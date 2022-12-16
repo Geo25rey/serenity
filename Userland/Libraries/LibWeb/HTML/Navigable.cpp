@@ -116,6 +116,17 @@ JS::GCPtr<NavigableContainer> Navigable::container() const
     return m_container;
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#nav-container-document
+JS::GCPtr<DOM::Document> Navigable::container_document() const
+{
+    // 1. If navigable's container is null, then return null.
+    if (!m_container)
+        return nullptr;
+
+    // 2. Return navigable's container's node document.
+    return m_container->document();
+}
+
 void Navigable::set_container(JS::GCPtr<NavigableContainer> container)
 {
     m_container = container;
