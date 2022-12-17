@@ -48,6 +48,25 @@ HTML::VisibilityState TraversableNavigable::system_visibility_state() const
     return m_system_visibility_state;
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#close-a-top-level-traversable
+void TraversableNavigable::close_top_level_traversable()
+{
+    VERIFY(is_top_level_traversable());
+
+    // 1. Let toUnload be traversable's active document's inclusive descendant navigables.
+    auto to_unload = active_document()->inclusive_descendant_navigables();
+
+    // FIXME: 2. If the result of checking if unloading is user-canceled for toUnload is true, then return.
+
+    // 3. Unload the active documents of each of toUnload.
+    for (auto navigable : to_unload) {
+        navigable->active_document()->unload();
+    }
+
+    // 4. Destroy traversable.
+    destroy_top_level_traversable();
+}
+
 // https://html.spec.whatwg.org/multipage/document-sequences.html#destroy-a-top-level-traversable
 void TraversableNavigable::destroy_top_level_traversable()
 {

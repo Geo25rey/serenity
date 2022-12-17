@@ -26,6 +26,7 @@ public:
     bool running_nested_apply_history_step() const;
     HTML::VisibilityState system_visibility_state() const;
 
+    void close_top_level_traversable();
     void destroy_top_level_traversable();
 
 private:
