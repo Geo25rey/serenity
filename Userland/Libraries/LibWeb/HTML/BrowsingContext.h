@@ -39,6 +39,8 @@ public:
 
     ~BrowsingContext();
 
+    JS::NonnullGCPtr<HTML::TraversableNavigable> top_level_traversable() const;
+
     JS::GCPtr<BrowsingContext> parent() const { return m_parent; }
     void append_child(JS::NonnullGCPtr<BrowsingContext>);
     void remove_child(JS::NonnullGCPtr<BrowsingContext>);
