@@ -96,12 +96,8 @@ void HTMLIFrameElement::removed_from(DOM::Node* node)
 {
     HTMLElement::removed_from(node);
 
-    // When an iframe element is removed from a document, the user agent must discard the element's nested browsing context,
-    // if it is not null, and then set the element's nested browsing context to null.
-    if (m_nested_browsing_context) {
-        m_nested_browsing_context->discard();
-        m_nested_browsing_context = nullptr;
-    }
+    // When an iframe element is removed from a document, the user agent must destroy the nested navigable of the element.
+    destroy_the_nested_navigable();
 }
 
 void HTMLIFrameElement::load_src(DeprecatedString const& value)
