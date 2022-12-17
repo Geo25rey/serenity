@@ -26,6 +26,9 @@ public:
     bool running_nested_apply_history_step() const;
     HTML::VisibilityState system_visibility_state() const;
 
+    static JS::NonnullGCPtr<TraversableNavigable> create_a_new_top_level_traversable(Page&, JS::GCPtr<BrowsingContext> opener, DeprecatedString target_name);
+    static JS::NonnullGCPtr<TraversableNavigable> create_a_fresh_top_level_traversable(Page&, AK::URL const& initial_navigation_url);
+
     void close_top_level_traversable();
     void destroy_top_level_traversable();
 

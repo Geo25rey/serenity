@@ -18,6 +18,13 @@ class BrowsingContextGroup final : public JS::Cell {
 
 public:
     static JS::NonnullGCPtr<BrowsingContextGroup> create_a_new_browsing_context_group(Page&);
+
+    struct BrowsingContextGroupAndDocument {
+        JS::NonnullGCPtr<HTML::BrowsingContextGroup> browsing_context;
+        JS::NonnullGCPtr<DOM::Document> document;
+    };
+    static BrowsingContextGroupAndDocument create_a_new_browsing_context_group_and_document(Page&);
+
     ~BrowsingContextGroup();
 
     Page* page() { return m_page; }

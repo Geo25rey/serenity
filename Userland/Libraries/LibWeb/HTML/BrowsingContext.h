@@ -37,6 +37,14 @@ public:
     static JS::NonnullGCPtr<BrowsingContext> create_a_new_browsing_context(Page&, JS::GCPtr<DOM::Document> creator, JS::GCPtr<DOM::Element> embedder, BrowsingContextGroup&);
     static JS::NonnullGCPtr<BrowsingContext> create_a_new_top_level_browsing_context(Page&);
 
+    struct BrowsingContextAndDocument {
+        JS::NonnullGCPtr<BrowsingContext> browsing_context;
+        JS::NonnullGCPtr<DOM::Document> document;
+    };
+
+    static BrowsingContextAndDocument create_a_new_browsing_context_and_document(Page& page, JS::GCPtr<DOM::Document> creator, JS::GCPtr<DOM::Element> embedder, JS::NonnullGCPtr<BrowsingContextGroup> group);
+    static BrowsingContextAndDocument create_a_new_auxiliary_browsing_context_and_document(Page& page, JS::NonnullGCPtr<HTML::BrowsingContext> opener);
+
     ~BrowsingContext();
 
     JS::NonnullGCPtr<HTML::TraversableNavigable> top_level_traversable() const;

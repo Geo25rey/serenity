@@ -10,6 +10,7 @@
 #include <LibWeb/HTML/BrowsingContext.h>
 #include <LibWeb/HTML/EventLoop/EventLoop.h>
 #include <LibWeb/HTML/Scripting/Environments.h>
+#include <LibWeb/HTML/TraversableNavigable.h>
 #include <LibWeb/Page/Page.h>
 #include <LibWeb/Platform/EventLoopPlugin.h>
 
@@ -19,6 +20,7 @@ Page::Page(PageClient& client)
     : m_client(client)
 {
     m_top_level_browsing_context = JS::make_handle(*HTML::BrowsingContext::create_a_new_top_level_browsing_context(*this));
+    m_top_level_traversable = JS::make_handle(HTML::TraversableNavigable::create_a_fresh_top_level_traversable(*this, AK::URL()));
 }
 
 Page::~Page() = default;

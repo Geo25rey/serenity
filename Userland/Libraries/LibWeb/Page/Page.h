@@ -46,6 +46,8 @@ public:
     HTML::BrowsingContext& top_level_browsing_context();
     HTML::BrowsingContext const& top_level_browsing_context() const;
 
+    JS::NonnullGCPtr<HTML::TraversableNavigable> top_level_traversable() const;
+
     HTML::BrowsingContext& focused_context();
     HTML::BrowsingContext const& focused_context() const { return const_cast<Page*>(this)->focused_context(); }
 
@@ -119,6 +121,8 @@ private:
 
     JS::Handle<HTML::BrowsingContext> m_top_level_browsing_context;
     WeakPtr<HTML::BrowsingContext> m_focused_context;
+
+    JS::Handle<HTML::TraversableNavigable> m_top_level_traversable;
 
     // FIXME: Enable this by default once CORS preflight checks are supported.
     bool m_same_origin_policy_enabled { false };
