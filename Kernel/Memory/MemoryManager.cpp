@@ -1040,6 +1040,7 @@ void MemoryManager::enter_address_space(AddressSpace& space)
 {
     auto* current_thread = Thread::current();
     VERIFY(current_thread != nullptr);
+    current_thread->set_user_address_space(space);
     activate_page_directory(space.page_directory(), current_thread);
 }
 

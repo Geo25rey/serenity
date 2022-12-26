@@ -679,7 +679,10 @@ ErrorOr<void> Process::do_exec(NonnullLockRefPtr<OpenFileDescription> main_progr
     regs.cs = GDT_SELECTOR_CODE3 | 3;
     regs.rip = load_result.entry_eip;
     regs.rsp = new_userspace_sp;
-    regs.cr3 = address_space().with([](auto& space) { return space->page_directory().cr3(); });
+    regs.cr3 = address_space().with([](auto& space) {
+        Thread::current()->set_user_address_space(space);
+        return space->page_directory().cr3();
+    });
 
     {
         TemporaryChange profiling_disabler(m_profiling, was_profiling);

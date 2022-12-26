@@ -253,6 +253,8 @@ ErrorOr<NonnullLockRefPtr<Process>> Process::try_create_user_process(LockRefPtr<
         return result.release_error();
     }
 
+    process->address_space().with([&](auto& space) { new_main_thread->set_user_address_space(space); });
+
     register_new(*process);
 
     // NOTE: All user processes have a leaked ref on them. It's balanced by Thread::WaitBlockerSet::finalize().

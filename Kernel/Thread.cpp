@@ -57,6 +57,10 @@ Thread::Thread(NonnullLockRefPtr<Process> process, NonnullOwnPtr<Memory::Region>
     , m_name(move(name))
     , m_block_timer(move(block_timer))
 {
+    m_user_address_space = m_process->address_space().with([&](auto& address_space) -> NonnullRefPtr<Memory::AddressSpace> {
+        return *address_space;
+    });
+
     bool is_first_thread = m_process->add_thread(*this);
     if (is_first_thread) {
         // First thread gets TID == PID
@@ -99,6 +103,16 @@ Thread::~Thread()
 
     // We shouldn't be queued
     VERIFY(m_runnable_priority < 0);
+}
+
+void Thread::set_user_address_space(RefPtr<Memory::AddressSpace> address_space)
+{
+    m_user_address_space = move(address_space);
+}
+
+RefPtr<Memory::AddressSpace> Thread::user_address_space()
+{
+    return m_user_address_space;
 }
 
 Thread::BlockResult Thread::block_impl(BlockTimeout const& timeout, Blocker& blocker)

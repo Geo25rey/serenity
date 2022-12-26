@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021, Andreas Kling <kling@serenityos.org>
+ * Copyright (c) 2018-2022, Andreas Kling <kling@serenityos.org>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,6 +7,7 @@
 #pragma once
 
 #include <AK/Concepts.h>
+#include <AK/RefPtr.h>
 #include <AK/EnumBits.h>
 #include <AK/Error.h>
 #include <AK/IntrusiveList.h>
@@ -72,6 +73,9 @@ public:
 
     static LockRefPtr<Thread> from_tid(ThreadID);
     static void finalize_dying_threads();
+
+    RefPtr<Memory::AddressSpace> user_address_space();
+    void set_user_address_space(RefPtr<Memory::AddressSpace>);
 
     ThreadID tid() const { return m_tid; }
     ProcessID pid() const;
@@ -1248,6 +1252,8 @@ private:
     Atomic<u32> m_nested_profiler_calls { 0 };
 
     NonnullLockRefPtr<Timer> m_block_timer;
+
+    RefPtr<Memory::AddressSpace> m_user_address_space;
 
     bool m_is_profiling_suppressed { false };
 

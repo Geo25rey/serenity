@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <AK/NonnullRefPtr.h>
 #include <AK/Types.h>
 #include <Kernel/Forward.h>
 
@@ -18,6 +19,7 @@ public:
 
 private:
     u32 m_previous_cr3 { 0 };
+    NonnullRefPtr<Memory::AddressSpace> m_previous_address_space;
 };
 
 }
