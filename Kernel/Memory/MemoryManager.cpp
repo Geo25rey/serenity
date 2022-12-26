@@ -366,7 +366,9 @@ UNMAP_AFTER_INIT void MemoryManager::parse_memory_map()
         }
 
         m_kernel_address_space.with([&](auto& address_space) {
-            initialize_physical_pages(address_space->region_tree());
+            address_space->region_tree().with([&](auto& region_tree) {
+                initialize_physical_pages(region_tree);
+            });
         });
 
         VERIFY(global_data.system_memory_info.physical_pages > 0);
@@ -657,7 +659,7 @@ Region* MemoryManager::kernel_region_from_vaddr(VirtualAddress address)
         return nullptr;
 
     return MM.m_kernel_address_space.with([&](auto& address_space) {
-        return address_space->region_tree().find_region_containing(address);
+        return address_space->region_tree().with([&](auto& region_tree) { return region_tree.find_region_containing(address); });
     });
 }
 
@@ -758,7 +760,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_contiguous_kernel_region(
         name_kstring = TRY(KString::try_create(name));
     auto vmobject = TRY(AnonymousVMObject::try_create_physically_contiguous_with_size(size));
     auto region = TRY(Region::create_unplaced(move(vmobject), 0, move(name_kstring), access, cacheable));
-    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
+    TRY(with_kernel_region_tree([&](auto& region_tree) { return region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -801,7 +803,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_kernel_region(size_t size
         name_kstring = TRY(KString::try_create(name));
     auto vmobject = TRY(AnonymousVMObject::try_create_with_size(size, strategy));
     auto region = TRY(Region::create_unplaced(move(vmobject), 0, move(name_kstring), access, cacheable));
-    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
+    TRY(with_kernel_region_tree([&](auto& region_tree) { return region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -814,7 +816,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_kernel_region(PhysicalAdd
     if (!name.is_null())
         name_kstring = TRY(KString::try_create(name));
     auto region = TRY(Region::create_unplaced(move(vmobject), 0, move(name_kstring), access, cacheable));
-    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size, PAGE_SIZE); }));
+    TRY(with_kernel_region_tree([&](auto& region_tree) { return region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size, PAGE_SIZE); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -828,7 +830,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_kernel_region_with_vmobje
         name_kstring = TRY(KString::try_create(name));
 
     auto region = TRY(Region::create_unplaced(vmobject, 0, move(name_kstring), access, cacheable));
-    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
+    TRY(with_kernel_region_tree([&](auto& region_tree) { return region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -1136,7 +1138,7 @@ bool MemoryManager::validate_user_stack(AddressSpace& space, VirtualAddress vadd
 void MemoryManager::unregister_kernel_region(Region& region)
 {
     VERIFY(region.is_kernel());
-    m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().remove(region); });
+    with_kernel_region_tree([&](auto& region_tree) { return region_tree.remove(region); });
 }
 
 void MemoryManager::dump_kernel_regions()
@@ -1145,8 +1147,8 @@ void MemoryManager::dump_kernel_regions()
     char const* addr_padding = "        ";
     dbgln("BEGIN{}         END{}        SIZE{}       ACCESS NAME",
         addr_padding, addr_padding, addr_padding);
-    m_kernel_address_space.with([&](auto& address_space) {
-        for (auto& region : address_space->region_tree().regions()) {
+    with_kernel_region_tree([&](auto& region_tree) {
+        for (auto& region : region_tree.regions()) {
             dbgln("{:p} -- {:p} {:p} {:c}{:c}{:c}{:c}{:c}{:c} {}",
                 region.vaddr().get(),
                 region.vaddr().offset(region.size() - 1).get(),
@@ -1213,7 +1215,7 @@ ErrorOr<NonnullOwnPtr<Memory::Region>> MemoryManager::create_identity_mapped_reg
 ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_unbacked_region_anywhere(size_t size, size_t alignment)
 {
     auto region = TRY(Region::create_unbacked());
-    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size, alignment); }));
+    TRY(with_kernel_region_tree([&](auto& region_tree) { return region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size, alignment); }));
     return region;
 }
 

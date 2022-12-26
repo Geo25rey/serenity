@@ -59,23 +59,27 @@ ErrorOr<NonnullOwnPtr<Coredump>> Coredump::try_create(NonnullLockRefPtr<Process>
     }
 
     Vector<FlatRegionData> regions;
-    size_t number_of_regions = process->address_space().with([](auto& space) {
-        return space->region_tree().regions().size();
-    });
-    TRY(regions.try_ensure_capacity(number_of_regions));
-    TRY(process->address_space().with([&](auto& space) -> ErrorOr<void> {
-        for (auto& region : space->region_tree().regions())
-            TRY(regions.try_empend(region, TRY(KString::try_create(region.name()))));
-        return {};
-    }));
+    auto address_space = process->address_space().with([&](auto& address_space) -> RefPtr<Memory::AddressSpace> { return address_space; });
+    if (!address_space) {
+        dbgln("Refusing to generate coredump for process with no address space");
+        return EINVAL;
+    }
 
-    auto description = TRY(try_create_target_file(process, output_path));
-    return adopt_nonnull_own_or_enomem(new (nothrow) Coredump(move(process), move(description), move(regions)));
+    return address_space->region_tree().with([&](auto& region_tree) -> ErrorOr<NonnullOwnPtr<Coredump>> {
+        size_t number_of_regions = region_tree.regions().size();
+        TRY(regions.try_ensure_capacity(number_of_regions));
+        for (auto& region : region_tree.regions())
+            TRY(regions.try_empend(region, TRY(KString::try_create(region.name()))));
+
+        auto description = TRY(try_create_target_file(process, output_path));
+        return adopt_nonnull_own_or_enomem(new (nothrow) Coredump(move(process), address_space.release_nonnull(), move(description), move(regions)));
+    });
 }
 
-Coredump::Coredump(NonnullLockRefPtr<Process> process, NonnullLockRefPtr<OpenFileDescription> description, Vector<FlatRegionData> regions)
+Coredump::Coredump(NonnullLockRefPtr<Process> process, NonnullRefPtr<Memory::AddressSpace> address_space, NonnullLockRefPtr<OpenFileDescription> description, Vector<FlatRegionData> regions)
     : m_process(move(process))
     , m_description(move(description))
+    , m_address_space(move(address_space))
     , m_regions(move(regions))
 {
     m_num_program_headers = 0;
@@ -225,8 +229,8 @@ ErrorOr<void> Coredump::write_regions()
 
         auto buffer = TRY(KBuffer::try_create_with_size("Coredump Region Copy Buffer"sv, region.page_count() * PAGE_SIZE));
 
-        TRY(m_process->address_space().with([&](auto& space) -> ErrorOr<void> {
-            auto* real_region = space->region_tree().regions().find(region.vaddr().get());
+        TRY(m_address_space->region_tree().with([&](auto& region_tree) -> ErrorOr<void> {
+            auto* real_region = region_tree.regions().find(region.vaddr().get());
 
             if (!real_region)
                 return Error::from_string_view("Failed to find matching region in the process"sv);
@@ -392,5 +396,4 @@ ErrorOr<void> Coredump::write()
 
     return m_description->chmod(Process::current().credentials(), 0600); // Make coredump file read/writable
 }
-
 }

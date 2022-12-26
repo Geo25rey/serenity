@@ -306,6 +306,16 @@ private:
     SpinlockProtected<GlobalData> m_global_data;
 
     SpinlockProtected<NonnullRefPtr<AddressSpace>> m_kernel_address_space;
+
+    template<typename Callback>
+    auto with_kernel_region_tree(Callback callback)
+    {
+        return m_kernel_address_space.with([&](auto& address_space) {
+            return address_space->region_tree().with([&](auto& region_tree) {
+                return callback(region_tree);
+            });
+        });
+    }
 };
 
 inline bool is_user_address(VirtualAddress vaddr)
@@ -349,5 +359,4 @@ inline ErrorOr<Memory::VirtualRange> expand_range_to_page_boundaries(FlatPtr add
 
     return Memory::VirtualRange { base, end - base.get() };
 }
-
 }

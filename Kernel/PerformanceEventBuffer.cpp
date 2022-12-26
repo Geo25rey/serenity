@@ -352,8 +352,9 @@ ErrorOr<void> PerformanceEventBuffer::add_process(Process const& process, Proces
     });
     TRY(result);
 
-    return process.address_space().with([&](auto& space) -> ErrorOr<void> {
-        for (auto const& region : space->region_tree().regions()) {
+    auto space = process.address_space().with([&](auto& space) -> NonnullRefPtr<Memory::AddressSpace> { return *space; });
+    return space->region_tree().with([&](auto& region_tree) -> ErrorOr<void> {
+        for (auto const& region : region_tree.regions()) {
             TRY(append_with_ip_and_bp(process.pid(), 0,
                 0, 0, PERF_EVENT_MMAP, 0, region.range().base().get(), region.range().size(), region.name()));
         }

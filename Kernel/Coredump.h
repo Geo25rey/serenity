@@ -65,7 +65,7 @@ private:
         VirtualAddress m_vaddr;
     };
 
-    Coredump(NonnullLockRefPtr<Process>, NonnullLockRefPtr<OpenFileDescription>, Vector<FlatRegionData>);
+    Coredump(NonnullLockRefPtr<Process>, NonnullRefPtr<Memory::AddressSpace>, NonnullLockRefPtr<OpenFileDescription>, Vector<FlatRegionData>);
     static ErrorOr<NonnullLockRefPtr<OpenFileDescription>> try_create_target_file(Process const&, StringView output_path);
 
     ErrorOr<void> write_elf_header();
@@ -81,6 +81,7 @@ private:
 
     NonnullLockRefPtr<Process> m_process;
     NonnullLockRefPtr<OpenFileDescription> m_description;
+    NonnullRefPtr<Memory::AddressSpace> m_address_space;
     size_t m_num_program_headers { 0 };
     Vector<FlatRegionData> m_regions;
 };
