@@ -13,11 +13,33 @@
 #include <Kernel/Memory/InodeVMObject.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/PerformanceManager.h>
+#include <Kernel/Prekernel/Prekernel.h>
 #include <Kernel/Process.h>
 #include <Kernel/Random.h>
 #include <Kernel/Scheduler.h>
+#include <Kernel/Sections.h>
 
 namespace Kernel::Memory {
+
+static UNMAP_AFTER_INIT VirtualRange kernel_virtual_range()
+{
+#if ARCH(AARCH64)
+    // NOTE: We currently identity map the kernel image for aarch64, so the kernel virtual range
+    //       is the complete memory range.
+    return VirtualRange { VirtualAddress((FlatPtr)0), 0x3F000000 };
+#else
+    size_t kernel_range_start = kernel_mapping_base + 2 * MiB; // The first 2 MiB are used for mapping the pre-kernel
+    return VirtualRange { VirtualAddress(kernel_range_start), KERNEL_PD_END - kernel_range_start };
+#endif
+}
+
+NonnullOwnPtr<AddressSpace> AddressSpace::create_kernel_address_space()
+{
+    auto page_directory = PageDirectory::must_create_kernel_page_directory();
+    auto space = MUST(adopt_nonnull_own_or_enomem(new (nothrow) AddressSpace(move(page_directory), kernel_virtual_range())));
+    space->page_directory().set_space({}, *space);
+    return space;
+}
 
 ErrorOr<NonnullOwnPtr<AddressSpace>> AddressSpace::try_create(AddressSpace const* parent)
 {

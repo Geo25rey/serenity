@@ -220,7 +220,7 @@ public:
     PhysicalPage& shared_zero_page() { return *m_shared_zero_page; }
     PhysicalPage& lazy_committed_page() { return *m_lazy_committed_page; }
 
-    PageDirectory& kernel_page_directory() { return *m_kernel_page_directory; }
+    PageDirectory& kernel_page_directory();
 
     template<typename Callback>
     void for_each_used_memory_range(Callback callback)
@@ -243,7 +243,7 @@ private:
     MemoryManager();
     ~MemoryManager();
 
-    void initialize_physical_pages();
+    void initialize_physical_pages(RegionTree&);
     void register_reserved_ranges();
 
     void unregister_kernel_region(Region&);
@@ -280,7 +280,6 @@ private:
     // NOTE: These are outside of GlobalData as they are only assigned on startup,
     //       and then never change. Atomic ref-counting covers that case without
     //       the need for additional synchronization.
-    LockRefPtr<PageDirectory> m_kernel_page_directory;
     RefPtr<PhysicalPage> m_shared_zero_page;
     RefPtr<PhysicalPage> m_lazy_committed_page;
 
@@ -289,15 +288,15 @@ private:
     PhysicalPageEntry* m_physical_page_entries { nullptr };
     size_t m_physical_page_entries_count { 0 };
 
-    struct GlobalData {
-        GlobalData();
+    // NOTE: This is owned by m_kernel_address_space. We allow you to access it without locking the address space.
+    //       This is safe because the kernel page directory is never replaced.
+    PageDirectory* m_kernel_page_directory { nullptr };
 
+    struct GlobalData {
         SystemMemoryInfo system_memory_info;
 
         NonnullOwnPtrVector<PhysicalRegion> physical_regions;
         OwnPtr<PhysicalRegion> physical_pages_region;
-
-        RegionTree region_tree;
 
         Vector<UsedMemoryRange> used_memory_ranges;
         Vector<PhysicalMemoryRange> physical_memory_ranges;
@@ -305,6 +304,8 @@ private:
     };
 
     SpinlockProtected<GlobalData> m_global_data;
+
+    SpinlockProtected<OwnPtr<AddressSpace>> m_kernel_address_space;
 };
 
 inline bool is_user_address(VirtualAddress vaddr)

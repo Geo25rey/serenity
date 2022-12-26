@@ -21,6 +21,7 @@ namespace Kernel::Memory {
 
 class AddressSpace {
 public:
+    static NonnullOwnPtr<AddressSpace> create_kernel_address_space();
     static ErrorOr<NonnullOwnPtr<AddressSpace>> try_create(AddressSpace const* parent);
     ~AddressSpace();
 

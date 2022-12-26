@@ -70,27 +70,15 @@ bool MemoryManager::is_initialized()
     return s_the != nullptr;
 }
 
-static UNMAP_AFTER_INIT VirtualRange kernel_virtual_range()
-{
-#if ARCH(AARCH64)
-    // NOTE: We currently identity map the kernel image for aarch64, so the kernel virtual range
-    //       is the complete memory range.
-    return VirtualRange { VirtualAddress((FlatPtr)0), 0x3F000000 };
-#else
-    size_t kernel_range_start = kernel_mapping_base + 2 * MiB; // The first 2 MiB are used for mapping the pre-kernel
-    return VirtualRange { VirtualAddress(kernel_range_start), KERNEL_PD_END - kernel_range_start };
-#endif
-}
-
-MemoryManager::GlobalData::GlobalData()
-    : region_tree(kernel_virtual_range())
-{
-}
-
 UNMAP_AFTER_INIT MemoryManager::MemoryManager()
     : m_global_data(LockRank::None)
+    , m_kernel_address_space(LockRank::None, AddressSpace::create_kernel_address_space())
 {
     s_the = this;
+
+    m_kernel_page_directory = m_kernel_address_space.with([&](auto& address_space) -> PageDirectory* {
+        return &address_space->page_directory();
+    });
 
     parse_memory_map();
     activate_kernel_page_directory(kernel_page_directory());
@@ -377,7 +365,9 @@ UNMAP_AFTER_INIT void MemoryManager::parse_memory_map()
             dmesgln("MM: Contiguous reserved range from {}, length is {}", range.start, range.length);
         }
 
-        initialize_physical_pages();
+        m_kernel_address_space.with([&](auto& address_space) {
+            initialize_physical_pages(address_space->region_tree());
+        });
 
         VERIFY(global_data.system_memory_info.physical_pages > 0);
 
@@ -395,7 +385,7 @@ UNMAP_AFTER_INIT void MemoryManager::parse_memory_map()
     });
 }
 
-UNMAP_AFTER_INIT void MemoryManager::initialize_physical_pages()
+UNMAP_AFTER_INIT void MemoryManager::initialize_physical_pages(RegionTree& region_tree)
 {
     m_global_data.with([&](auto& global_data) {
         // We assume that the physical page range is contiguous and doesn't contain huge gaps!
@@ -453,20 +443,17 @@ UNMAP_AFTER_INIT void MemoryManager::initialize_physical_pages()
         }
         global_data.used_memory_ranges.append({ UsedMemoryRangeType::PhysicalPages, global_data.physical_pages_region->lower(), global_data.physical_pages_region->upper() });
 
-        // Create the bare page directory. This is not a fully constructed page directory and merely contains the allocators!
-        m_kernel_page_directory = PageDirectory::must_create_kernel_page_directory();
-
         {
             // Carve out the whole page directory covering the kernel image to make MemoryManager::initialize_physical_pages() happy
             FlatPtr start_of_range = ((FlatPtr)start_of_kernel_image & ~(FlatPtr)0x1fffff);
             FlatPtr end_of_range = ((FlatPtr)end_of_kernel_image & ~(FlatPtr)0x1fffff) + 0x200000;
-            MUST(global_data.region_tree.place_specifically(*MUST(Region::create_unbacked()).leak_ptr(), VirtualRange { VirtualAddress(start_of_range), end_of_range - start_of_range }));
+            MUST(region_tree.place_specifically(*MUST(Region::create_unbacked()).leak_ptr(), VirtualRange { VirtualAddress(start_of_range), end_of_range - start_of_range }));
         }
 
         // Allocate a virtual address range for our array
         // This looks awkward, but it basically creates a dummy region to occupy the address range permanently.
         auto& region = *MUST(Region::create_unbacked()).leak_ptr();
-        MUST(global_data.region_tree.place_anywhere(region, RandomizeVirtualAddress::No, physical_page_array_pages * PAGE_SIZE));
+        MUST(region_tree.place_anywhere(region, RandomizeVirtualAddress::No, physical_page_array_pages * PAGE_SIZE));
         auto range = region.range();
 
         // Now that we have our special m_physical_pages_region region with enough pages to hold the entire array
@@ -526,7 +513,9 @@ UNMAP_AFTER_INIT void MemoryManager::initialize_physical_pages()
 
         // Now we should be able to allocate PhysicalPage instances,
         // so finish setting up the kernel page directory
-        m_kernel_page_directory->allocate_kernel_directory();
+        m_kernel_address_space.with([&](auto& address_space) {
+            address_space->page_directory().allocate_kernel_directory();
+        });
 
         // Now create legit PhysicalPage objects for the page tables we created.
         virtual_page_array_current_page = virtual_page_array_base;
@@ -611,7 +600,7 @@ PageTableEntry* MemoryManager::ensure_pte(PageDirectory& page_directory, Virtual
     pde.set_user_allowed(true);
     pde.set_present(true);
     pde.set_writable(true);
-    pde.set_global(&page_directory == m_kernel_page_directory.ptr());
+    pde.set_global(&page_directory == &kernel_page_directory());
 
     // NOTE: This leaked ref is matched by the unref in MemoryManager::release_pte()
     (void)page_table.leak_ref();
@@ -667,8 +656,8 @@ Region* MemoryManager::kernel_region_from_vaddr(VirtualAddress address)
     if (is_user_address(address))
         return nullptr;
 
-    return MM.m_global_data.with([&](auto& global_data) {
-        return global_data.region_tree.find_region_containing(address);
+    return MM.m_kernel_address_space.with([&](auto& address_space) {
+        return address_space->region_tree().find_region_containing(address);
     });
 }
 
@@ -769,7 +758,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_contiguous_kernel_region(
         name_kstring = TRY(KString::try_create(name));
     auto vmobject = TRY(AnonymousVMObject::try_create_physically_contiguous_with_size(size));
     auto region = TRY(Region::create_unplaced(move(vmobject), 0, move(name_kstring), access, cacheable));
-    TRY(m_global_data.with([&](auto& global_data) { return global_data.region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
+    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -812,7 +801,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_kernel_region(size_t size
         name_kstring = TRY(KString::try_create(name));
     auto vmobject = TRY(AnonymousVMObject::try_create_with_size(size, strategy));
     auto region = TRY(Region::create_unplaced(move(vmobject), 0, move(name_kstring), access, cacheable));
-    TRY(m_global_data.with([&](auto& global_data) { return global_data.region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
+    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -825,7 +814,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_kernel_region(PhysicalAdd
     if (!name.is_null())
         name_kstring = TRY(KString::try_create(name));
     auto region = TRY(Region::create_unplaced(move(vmobject), 0, move(name_kstring), access, cacheable));
-    TRY(m_global_data.with([&](auto& global_data) { return global_data.region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size, PAGE_SIZE); }));
+    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size, PAGE_SIZE); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -839,7 +828,7 @@ ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_kernel_region_with_vmobje
         name_kstring = TRY(KString::try_create(name));
 
     auto region = TRY(Region::create_unplaced(vmobject, 0, move(name_kstring), access, cacheable));
-    TRY(m_global_data.with([&](auto& global_data) { return global_data.region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
+    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size); }));
     TRY(region->map(kernel_page_directory()));
     return region;
 }
@@ -1146,7 +1135,7 @@ bool MemoryManager::validate_user_stack(AddressSpace& space, VirtualAddress vadd
 void MemoryManager::unregister_kernel_region(Region& region)
 {
     VERIFY(region.is_kernel());
-    m_global_data.with([&](auto& global_data) { global_data.region_tree.remove(region); });
+    m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().remove(region); });
 }
 
 void MemoryManager::dump_kernel_regions()
@@ -1155,8 +1144,8 @@ void MemoryManager::dump_kernel_regions()
     char const* addr_padding = "        ";
     dbgln("BEGIN{}         END{}        SIZE{}       ACCESS NAME",
         addr_padding, addr_padding, addr_padding);
-    m_global_data.with([&](auto& global_data) {
-        for (auto& region : global_data.region_tree.regions()) {
+    m_kernel_address_space.with([&](auto& address_space) {
+        for (auto& region : address_space->region_tree().regions()) {
             dbgln("{:p} -- {:p} {:p} {:c}{:c}{:c}{:c}{:c}{:c} {}",
                 region.vaddr().get(),
                 region.vaddr().offset(region.size() - 1).get(),
@@ -1223,7 +1212,7 @@ ErrorOr<NonnullOwnPtr<Memory::Region>> MemoryManager::create_identity_mapped_reg
 ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_unbacked_region_anywhere(size_t size, size_t alignment)
 {
     auto region = TRY(Region::create_unbacked());
-    TRY(m_global_data.with([&](auto& global_data) { return global_data.region_tree.place_anywhere(*region, RandomizeVirtualAddress::No, size, alignment); }));
+    TRY(m_kernel_address_space.with([&](auto& address_space) { return address_space->region_tree().place_anywhere(*region, RandomizeVirtualAddress::No, size, alignment); }));
     return region;
 }
 
@@ -1235,4 +1224,10 @@ MemoryManager::SystemMemoryInfo MemoryManager::get_system_memory_info()
         return global_data.system_memory_info;
     });
 }
+
+PageDirectory& MemoryManager::kernel_page_directory()
+{
+    return *m_kernel_page_directory;
+}
+
 }
