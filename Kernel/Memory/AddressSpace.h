@@ -19,10 +19,10 @@
 
 namespace Kernel::Memory {
 
-class AddressSpace {
+class AddressSpace final : public AtomicRefCounted<AddressSpace> {
 public:
-    static NonnullOwnPtr<AddressSpace> create_kernel_address_space();
-    static ErrorOr<NonnullOwnPtr<AddressSpace>> try_create(AddressSpace const* parent);
+    static NonnullRefPtr<AddressSpace> create_kernel_address_space();
+    static ErrorOr<NonnullRefPtr<AddressSpace>> try_create(AddressSpace const* parent);
     ~AddressSpace();
 
     PageDirectory& page_directory() { return *m_page_directory; }

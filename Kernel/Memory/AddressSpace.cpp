@@ -33,15 +33,15 @@ static UNMAP_AFTER_INIT VirtualRange kernel_virtual_range()
 #endif
 }
 
-NonnullOwnPtr<AddressSpace> AddressSpace::create_kernel_address_space()
+NonnullRefPtr<AddressSpace> AddressSpace::create_kernel_address_space()
 {
     auto page_directory = PageDirectory::must_create_kernel_page_directory();
-    auto space = MUST(adopt_nonnull_own_or_enomem(new (nothrow) AddressSpace(move(page_directory), kernel_virtual_range())));
+    auto space = MUST(adopt_nonnull_ref_or_enomem(new (nothrow) AddressSpace(move(page_directory), kernel_virtual_range())));
     space->page_directory().set_space({}, *space);
     return space;
 }
 
-ErrorOr<NonnullOwnPtr<AddressSpace>> AddressSpace::try_create(AddressSpace const* parent)
+ErrorOr<NonnullRefPtr<AddressSpace>> AddressSpace::try_create(AddressSpace const* parent)
 {
     auto page_directory = TRY(PageDirectory::try_create_for_userspace());
 
@@ -55,7 +55,7 @@ ErrorOr<NonnullOwnPtr<AddressSpace>> AddressSpace::try_create(AddressSpace const
         return VirtualRange(VirtualAddress { base }, userspace_range_ceiling - base);
     }();
 
-    auto space = TRY(adopt_nonnull_own_or_enomem(new (nothrow) AddressSpace(move(page_directory), total_range)));
+    auto space = TRY(adopt_nonnull_ref_or_enomem(new (nothrow) AddressSpace(move(page_directory), total_range)));
     space->page_directory().set_space({}, *space);
     return space;
 }

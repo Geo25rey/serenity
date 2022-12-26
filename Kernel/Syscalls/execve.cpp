@@ -30,7 +30,7 @@ namespace Kernel {
 extern Memory::Region* g_signal_trampoline_region;
 
 struct LoadResult {
-    OwnPtr<Memory::AddressSpace> space;
+    NonnullRefPtr<Memory::AddressSpace> space;
     FlatPtr load_base { 0 };
     FlatPtr entry_eip { 0 };
     size_t size { 0 };
@@ -257,7 +257,7 @@ enum class ShouldAllowSyscalls {
     Yes,
 };
 
-static ErrorOr<LoadResult> load_elf_object(NonnullOwnPtr<Memory::AddressSpace> new_space, OpenFileDescription& object_description,
+static ErrorOr<LoadResult> load_elf_object(NonnullRefPtr<Memory::AddressSpace> new_space, OpenFileDescription& object_description,
     FlatPtr load_offset, ShouldAllocateTls should_allocate_tls, ShouldAllowSyscalls should_allow_syscalls)
 {
     auto& inode = *(object_description.inode());
@@ -557,7 +557,7 @@ ErrorOr<void> Process::do_exec(NonnullLockRefPtr<OpenFileDescription> main_progr
     // This ensures that the process always has a valid page directory.
     Memory::MemoryManager::enter_address_space(*load_result.space);
 
-    m_space.with([&](auto& space) { space = load_result.space.release_nonnull(); });
+    m_space.with([&](auto& space) { space = move(load_result.space); });
 
     m_executable.with([&](auto& executable) { executable = main_program_description->custody(); });
     m_arguments = move(arguments);

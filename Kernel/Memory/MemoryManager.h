@@ -305,7 +305,7 @@ private:
 
     SpinlockProtected<GlobalData> m_global_data;
 
-    SpinlockProtected<OwnPtr<AddressSpace>> m_kernel_address_space;
+    SpinlockProtected<NonnullRefPtr<AddressSpace>> m_kernel_address_space;
 };
 
 inline bool is_user_address(VirtualAddress vaddr)

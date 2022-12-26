@@ -567,8 +567,8 @@ public:
     PerformanceEventBuffer* perf_events() { return m_perf_event_buffer; }
     PerformanceEventBuffer const* perf_events() const { return m_perf_event_buffer; }
 
-    SpinlockProtected<OwnPtr<Memory::AddressSpace>>& address_space() { return m_space; }
-    SpinlockProtected<OwnPtr<Memory::AddressSpace>> const& address_space() const { return m_space; }
+    SpinlockProtected<RefPtr<Memory::AddressSpace>>& address_space() { return m_space; }
+    SpinlockProtected<RefPtr<Memory::AddressSpace>> const& address_space() const { return m_space; }
 
     VirtualAddress signal_trampoline() const
     {
@@ -592,7 +592,7 @@ private:
 
     Process(NonnullOwnPtr<KString> name, NonnullRefPtr<Credentials>, ProcessID ppid, bool is_kernel_process, RefPtr<Custody> current_directory, RefPtr<Custody> executable, TTY* tty, UnveilNode unveil_tree, UnveilNode exec_unveil_tree);
     static ErrorOr<NonnullLockRefPtr<Process>> try_create(LockRefPtr<Thread>& first_thread, NonnullOwnPtr<KString> name, UserID, GroupID, ProcessID ppid, bool is_kernel_process, RefPtr<Custody> current_directory = nullptr, RefPtr<Custody> executable = nullptr, TTY* = nullptr, Process* fork_parent = nullptr);
-    ErrorOr<void> attach_resources(NonnullOwnPtr<Memory::AddressSpace>&&, LockRefPtr<Thread>& first_thread, Process* fork_parent);
+    ErrorOr<void> attach_resources(NonnullRefPtr<Memory::AddressSpace>&&, LockRefPtr<Thread>& first_thread, Process* fork_parent);
     static ProcessID allocate_pid();
 
     void kill_threads_except_self();
@@ -665,7 +665,7 @@ private:
 
     NonnullOwnPtr<KString> m_name;
 
-    SpinlockProtected<OwnPtr<Memory::AddressSpace>> m_space;
+    SpinlockProtected<RefPtr<Memory::AddressSpace>> m_space;
 
     LockRefPtr<ProcessGroup> m_pg;
 

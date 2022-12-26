@@ -300,7 +300,7 @@ void Process::unprotect_data()
 
 ErrorOr<NonnullLockRefPtr<Process>> Process::try_create(LockRefPtr<Thread>& first_thread, NonnullOwnPtr<KString> name, UserID uid, GroupID gid, ProcessID ppid, bool is_kernel_process, RefPtr<Custody> current_directory, RefPtr<Custody> executable, TTY* tty, Process* fork_parent)
 {
-    OwnPtr<Memory::AddressSpace> new_address_space;
+    RefPtr<Memory::AddressSpace> new_address_space;
     if (fork_parent) {
         TRY(fork_parent->address_space().with([&](auto& parent_address_space) -> ErrorOr<void> {
             new_address_space = TRY(Memory::AddressSpace::try_create(parent_address_space.ptr()));
@@ -339,7 +339,7 @@ Process::Process(NonnullOwnPtr<KString> name, NonnullRefPtr<Credentials> credent
     dbgln_if(PROCESS_DEBUG, "Created new process {}({})", m_name, this->pid().value());
 }
 
-ErrorOr<void> Process::attach_resources(NonnullOwnPtr<Memory::AddressSpace>&& preallocated_space, LockRefPtr<Thread>& first_thread, Process* fork_parent)
+ErrorOr<void> Process::attach_resources(NonnullRefPtr<Memory::AddressSpace>&& preallocated_space, LockRefPtr<Thread>& first_thread, Process* fork_parent)
 {
     m_space.with([&](auto& space) {
         space = move(preallocated_space);
