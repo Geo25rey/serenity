@@ -27,6 +27,8 @@ public:
 
     u32 writable_mappings() const;
 
+    virtual Result<void, PageFaultResponse> handle_page_fault(size_t page_index) override;
+
 protected:
     explicit InodeVMObject(Inode&, FixedArray<RefPtr<PhysicalPage>>&&, Bitmap dirty_pages);
     explicit InodeVMObject(InodeVMObject const&, FixedArray<RefPtr<PhysicalPage>>&&, Bitmap dirty_pages);

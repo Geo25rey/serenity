@@ -7,6 +7,7 @@
 #include <AK/Singleton.h>
 #include <Kernel/Memory/MemoryManager.h>
 #include <Kernel/Memory/VMObject.h>
+#include <Kernel/Panic.h>
 
 namespace Kernel::Memory {
 
@@ -36,6 +37,11 @@ VMObject::VMObject(FixedArray<RefPtr<PhysicalPage>>&& new_physical_pages)
 VMObject::~VMObject()
 {
     VERIFY(m_regions.is_empty());
+}
+
+Result<void, PageFaultResponse> VMObject::handle_page_fault(size_t)
+{
+    PANIC("Page fault in VMObject without fault handler");
 }
 
 }

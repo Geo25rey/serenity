@@ -26,7 +26,6 @@ public:
     virtual ErrorOr<NonnullLockRefPtr<VMObject>> try_clone() override;
 
     [[nodiscard]] NonnullRefPtr<PhysicalPage> allocate_committed_page(Badge<Region>);
-    PageFaultResponse handle_cow_fault(size_t, VirtualAddress);
     size_t cow_pages() const;
     bool should_cow(size_t page_index, bool) const;
     ErrorOr<void> set_should_cow(size_t page_index, bool);
@@ -37,6 +36,8 @@ public:
     ErrorOr<void> set_volatile(bool is_volatile, bool& was_purged);
 
     size_t purge();
+
+    virtual Result<void, PageFaultResponse> handle_page_fault(size_t page_index) override;
 
 private:
     class SharedCommittedCowPages;
@@ -58,6 +59,8 @@ private:
 
     ErrorOr<void> ensure_cow_map();
     ErrorOr<void> ensure_or_reset_cow_map();
+    Result<void, PageFaultResponse> handle_zero_fault(size_t page_index);
+    Result<void, PageFaultResponse> handle_cow_fault(size_t page_index);
 
     Optional<CommittedPhysicalPageSet> m_unused_committed_pages;
     Bitmap m_cow_map;

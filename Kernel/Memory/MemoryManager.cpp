@@ -653,16 +653,6 @@ UNMAP_AFTER_INIT void MemoryManager::initialize(u32 cpu)
     }
 }
 
-Region* MemoryManager::kernel_region_from_vaddr(VirtualAddress address)
-{
-    if (is_user_address(address))
-        return nullptr;
-
-    return MM.m_kernel_address_space.with([&](auto& address_space) {
-        return address_space->region_tree().with([&](auto& region_tree) { return region_tree.find_region_containing(address); });
-    });
-}
-
 Region* MemoryManager::find_user_region_from_vaddr(AddressSpace& space, VirtualAddress vaddr)
 {
     return space.find_region_containing({ vaddr, 1 });
@@ -710,17 +700,6 @@ void MemoryManager::validate_syscall_preconditions(Process& process, RegisterSta
     }
 }
 
-Region* MemoryManager::find_region_from_vaddr(VirtualAddress vaddr)
-{
-    if (auto* region = kernel_region_from_vaddr(vaddr))
-        return region;
-    auto page_directory = PageDirectory::find_current();
-    if (!page_directory)
-        return nullptr;
-    VERIFY(page_directory->address_space());
-    return find_user_region_from_vaddr(*page_directory->address_space(), vaddr);
-}
-
 PageFaultResponse MemoryManager::handle_page_fault(PageFault const& fault)
 {
     auto faulted_in_range = [&fault](auto const* start, auto const* end) {
@@ -745,11 +724,62 @@ PageFaultResponse MemoryManager::handle_page_fault(PageFault const& fault)
         return PageFaultResponse::ShouldCrash;
     }
     dbgln_if(PAGE_FAULT_DEBUG, "MM: CPU[{}] handle_page_fault({:#04x}) at {}", Processor::current_id(), fault.code(), fault.vaddr());
-    auto* region = find_region_from_vaddr(fault.vaddr());
-    if (!region) {
-        return PageFaultResponse::ShouldCrash;
+
+    // Find the AddressSpace associated with the faulting address.
+    RefPtr<AddressSpace> address_space;
+    if (is_user_address(fault.vaddr())) {
+        address_space = Thread::current()->user_address_space();
+    } else {
+        address_space = m_kernel_address_space.with([&](auto& address_space) -> NonnullRefPtr<AddressSpace> { return *address_space; });
     }
-    return region->handle_fault(fault);
+
+    // Once we know the address space, lock its region tree (so the layout can't change)
+    // and locate the Region that contains the faulting address.
+    // If a Region is found, we "prepare" to handle the fault.
+    struct PageFaultLocation {
+        NonnullRefPtr<VMObject> vmobject;
+        size_t page_index { 0 };
+    };
+
+    auto location = TRY(address_space->region_tree().with([&](auto& region_tree) -> Result<PageFaultLocation, PageFaultResponse> {
+        Region* region = region_tree.find_region_containing(fault.vaddr());
+        if (!region) {
+            return PageFaultResponse::ShouldCrash;
+        }
+
+        TRY(region->validate_access(fault));
+
+        return PageFaultLocation {
+            .vmobject = region->vmobject(),
+            .page_index = region->first_page_index() + region->page_index_from_address(fault.vaddr()),
+        };
+    }));
+
+    TRY(location.vmobject->handle_page_fault(location.page_index));
+
+    // At this point, we've put a new page in the VMObject slot.
+    // Re-lock the region tree, so we can update the mapping.
+    TRY(address_space->region_tree().with([&](auto& region_tree) -> Result<void, PageFaultResponse> {
+        Region* region = region_tree.find_region_containing(fault.vaddr());
+        if (!region) {
+            // The region has been unmapped while we were handling the fault. Crash the process.
+            return PageFaultResponse::ShouldCrash;
+        }
+        if (region->vmobject() != location.vmobject) {
+            // Another VMObject is mapped here now. Crash the process.
+            return PageFaultResponse::ShouldCrash;
+        }
+
+        auto const page_index_in_region = region->page_index_from_address(fault.vaddr());
+        SpinlockLocker page_lock(region->m_page_directory->get_lock());
+        if (!region->map_individual_page_impl(page_index_in_region)) {
+            // Mapping will fail if we don't have enough memory to create a page table.
+            return PageFaultResponse::OutOfMemory;
+        }
+        return {};
+    }));
+
+    return PageFaultResponse::Continue;
 }
 
 ErrorOr<NonnullOwnPtr<Region>> MemoryManager::allocate_contiguous_kernel_region(size_t size, StringView name, Region::Access access, Region::Cacheable cacheable)

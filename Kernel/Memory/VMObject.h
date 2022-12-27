@@ -54,6 +54,8 @@ public:
         m_regions.remove(region);
     }
 
+    virtual Result<void, PageFaultResponse> handle_page_fault(size_t page_index);
+
 protected:
     static ErrorOr<FixedArray<RefPtr<PhysicalPage>>> try_create_physical_pages(size_t);
     ErrorOr<FixedArray<RefPtr<PhysicalPage>>> try_clone_physical_pages() const;

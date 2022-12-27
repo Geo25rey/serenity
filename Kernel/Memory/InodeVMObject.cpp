@@ -6,6 +6,8 @@
 
 #include <Kernel/FileSystem/Inode.h>
 #include <Kernel/Memory/InodeVMObject.h>
+#include <Kernel/InterruptDisabler.h>
+#include <Kernel/Memory/MemoryManager.h>
 
 namespace Kernel::Memory {
 
@@ -94,6 +96,65 @@ u32 InodeVMObject::writable_mappings() const
             ++count;
     });
     return count;
+}
+
+Result<void, PageFaultResponse> InodeVMObject::handle_page_fault(size_t page_index)
+{
+    VERIFY_INTERRUPTS_ENABLED();
+
+    if (auto* current_thread = Thread::current()) {
+        current_thread->did_inode_fault();
+    }
+
+    u8 page_buffer[PAGE_SIZE];
+    auto buffer = UserOrKernelBuffer::for_kernel_buffer(page_buffer);
+    auto result = inode().read_bytes(page_index * PAGE_SIZE, PAGE_SIZE, buffer, nullptr);
+
+    if (result.is_error()) {
+        dmesgln("InodeVMObject::handle_page_fault: Read error: {}", result.error());
+        return PageFaultResponse::ShouldCrash;
+    }
+
+    auto nread = result.value();
+    // Note: If we received 0, it means we are at the end of file or after it,
+    // which means we should return bus error.
+    if (nread == 0) {
+        return PageFaultResponse::BusError;
+    }
+
+    if (nread < PAGE_SIZE) {
+        // If we read less than a page, zero out the rest to avoid leaking uninitialized data.
+        memset(page_buffer + nread, 0, PAGE_SIZE - nread);
+    }
+
+    // Allocate a new physical page, and copy the read inode contents into it.
+    auto new_physical_page_or_error = MM.allocate_physical_page(MemoryManager::ShouldZeroFill::No);
+    if (new_physical_page_or_error.is_error()) {
+        dmesgln("MM: handle_inode_fault was unable to allocate a physical page");
+        return PageFaultResponse::OutOfMemory;
+    }
+    auto new_physical_page = new_physical_page_or_error.release_value();
+    {
+        InterruptDisabler disabler;
+        u8* dest_ptr = MM.quickmap_page(*new_physical_page);
+        memcpy(dest_ptr, page_buffer, PAGE_SIZE);
+        MM.unquickmap_page();
+    }
+
+    {
+        // NOTE: The VMObject lock is required when manipulating the VMObject's physical page slot.
+        SpinlockLocker locker(m_lock);
+
+        if (!physical_pages()[page_index].is_null()) {
+            // Someone else faulted in this page while we were reading from the inode.
+            // No harm done (other than some duplicate work), remap the page here and return.
+            dbgln_if(PAGE_FAULT_DEBUG, "InodeVMObject::handle_page_fault: Page faulted in by someone else, remapping.");
+            return {};
+        }
+        physical_pages()[page_index] = move(new_physical_page);
+    }
+
+    return {};
 }
 
 }

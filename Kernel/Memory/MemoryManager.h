@@ -128,6 +128,7 @@ private:
 class MemoryManager {
     friend class PageDirectory;
     friend class AnonymousVMObject;
+    friend class InodeVMObject;
     friend class Region;
     friend class RegionTree;
     friend class VMObject;
@@ -252,10 +253,6 @@ private:
     void parse_memory_map();
     static void flush_tlb_local(VirtualAddress, size_t page_count = 1);
     static void flush_tlb(PageDirectory const*, VirtualAddress, size_t page_count = 1);
-
-    static Region* kernel_region_from_vaddr(VirtualAddress);
-
-    static Region* find_region_from_vaddr(VirtualAddress);
 
     RefPtr<PhysicalPage> find_free_physical_page(bool);
 

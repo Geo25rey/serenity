@@ -5,8 +5,6 @@
  */
 
 #include <AK/NonnullRefPtrVector.h>
-#include <Kernel/Arch/SafeMem.h>
-#include <Kernel/Arch/SmapDisabler.h>
 #include <Kernel/Debug.h>
 #include <Kernel/Memory/AnonymousVMObject.h>
 #include <Kernel/Memory/MemoryManager.h>
@@ -316,9 +314,41 @@ size_t AnonymousVMObject::cow_pages() const
     return m_cow_map.count_slow(true);
 }
 
-PageFaultResponse AnonymousVMObject::handle_cow_fault(size_t page_index, VirtualAddress vaddr)
+Result<void, PageFaultResponse> AnonymousVMObject::handle_zero_fault(size_t page_index)
 {
-    SpinlockLocker lock(m_lock);
+    VERIFY(m_lock.is_locked_by_current_processor());
+
+    if (auto* current_thread = Thread::current()) {
+        current_thread->did_zero_fault();
+    }
+
+    auto& slot = physical_pages()[page_index];
+
+    if (slot->is_lazy_committed_page()) {
+        slot = m_unused_committed_pages->take_one();
+        return {};
+    }
+
+    if (slot->is_shared_zero_page()) {
+        auto page_or_error = MM.allocate_physical_page(MemoryManager::ShouldZeroFill::Yes);
+        if (page_or_error.is_error()) {
+            dmesgln("AnonymousVMObject::handle_page_fault: Unable to allocate a physical page");
+            return PageFaultResponse::OutOfMemory;
+        }
+        slot = page_or_error.release_value();
+        return {};
+    }
+
+    VERIFY_NOT_REACHED();
+}
+
+Result<void, PageFaultResponse> AnonymousVMObject::handle_cow_fault(size_t page_index)
+{
+    VERIFY(m_lock.is_locked_by_current_processor());
+
+    if (auto* current_thread = Thread::current()) {
+        current_thread->did_cow_fault();
+    }
 
     if (is_volatile()) {
         // A COW fault in a volatile region? Userspace is writing to volatile memory, this is a bug. Crash.
@@ -342,7 +372,7 @@ PageFaultResponse AnonymousVMObject::handle_cow_fault(size_t page_index, Virtual
             if (m_shared_committed_cow_pages->is_empty())
                 m_shared_committed_cow_pages = nullptr;
         }
-        return PageFaultResponse::Continue;
+        return {};
     }
 
     RefPtr<PhysicalPage> page;
@@ -359,26 +389,22 @@ PageFaultResponse AnonymousVMObject::handle_cow_fault(size_t page_index, Virtual
         page = page_or_error.release_value();
     }
 
-    dbgln_if(PAGE_FAULT_DEBUG, "      >> COW {} <- {}", page->paddr(), page_slot->paddr());
+    // FIXME: COW could be a lot faster if we didn't copy via a temporary stack buffer.
+    //        We'd need a second quickmap slot for that.
+    u8 buffer[PAGE_SIZE];
+    {
+        u8 const* src_ptr = MM.quickmap_page(*page_slot);
+        memcpy(buffer, src_ptr, PAGE_SIZE);
+        MM.unquickmap_page();
+    }
     {
         u8* dest_ptr = MM.quickmap_page(*page);
-        SmapDisabler disabler;
-        void* fault_at;
-        if (!safe_memcpy(dest_ptr, vaddr.as_ptr(), PAGE_SIZE, fault_at)) {
-            if ((u8*)fault_at >= dest_ptr && (u8*)fault_at <= dest_ptr + PAGE_SIZE)
-                dbgln("      >> COW: error copying page {}/{} to {}/{}: failed to write to page at {}",
-                    page_slot->paddr(), vaddr, page->paddr(), VirtualAddress(dest_ptr), VirtualAddress(fault_at));
-            else if ((u8*)fault_at >= vaddr.as_ptr() && (u8*)fault_at <= vaddr.as_ptr() + PAGE_SIZE)
-                dbgln("      >> COW: error copying page {}/{} to {}/{}: failed to read from page at {}",
-                    page_slot->paddr(), vaddr, page->paddr(), VirtualAddress(dest_ptr), VirtualAddress(fault_at));
-            else
-                VERIFY_NOT_REACHED();
-        }
+        memcpy(dest_ptr, buffer, PAGE_SIZE);
         MM.unquickmap_page();
     }
     page_slot = move(page);
     MUST(set_should_cow(page_index, false)); // If we received a COW fault, we already have a cow map allocated, so this is infallible
-    return PageFaultResponse::Continue;
+    return {};
 }
 
 AnonymousVMObject::SharedCommittedCowPages::SharedCommittedCowPages(CommittedPhysicalPageSet&& committed_pages)
@@ -398,6 +424,17 @@ void AnonymousVMObject::SharedCommittedCowPages::uncommit_one()
 {
     SpinlockLocker locker(m_lock);
     m_committed_pages.uncommit_one();
+}
+
+Result<void, PageFaultResponse> AnonymousVMObject::handle_page_fault(size_t page_index)
+{
+    SpinlockLocker locker(m_lock);
+
+    if (should_cow(page_index, false)) {
+        return handle_cow_fault(page_index);
+    }
+
+    return handle_zero_fault(page_index);
 }
 
 }

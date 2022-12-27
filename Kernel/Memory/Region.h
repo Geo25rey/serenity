@@ -10,6 +10,7 @@
 #include <AK/EnumBits.h>
 #include <AK/IntrusiveList.h>
 #include <AK/IntrusiveRedBlackTree.h>
+#include <AK/Result.h>
 #include <Kernel/Forward.h>
 #include <Kernel/KString.h>
 #include <Kernel/Library/LockWeakable.h>
@@ -105,8 +106,6 @@ public:
 
     [[nodiscard]] bool is_user() const { return !is_kernel(); }
     [[nodiscard]] bool is_kernel() const { return vaddr().get() < USER_RANGE_BASE || vaddr().get() >= kernel_mapping_base; }
-
-    PageFaultResponse handle_fault(PageFault const&);
 
     ErrorOr<NonnullOwnPtr<Region>> try_clone();
 
@@ -211,8 +210,6 @@ private:
     Region(NonnullLockRefPtr<VMObject>, size_t offset_in_vmobject, OwnPtr<KString>, Region::Access access, Cacheable, bool shared);
     Region(VirtualRange const&, NonnullLockRefPtr<VMObject>, size_t offset_in_vmobject, OwnPtr<KString>, Region::Access access, Cacheable, bool shared);
 
-    [[nodiscard]] bool remap_vmobject_page(size_t page_index, NonnullRefPtr<PhysicalPage>);
-
     void set_access_bit(Access access, bool b)
     {
         if (b)
@@ -221,9 +218,7 @@ private:
             m_access &= ~access;
     }
 
-    [[nodiscard]] PageFaultResponse handle_cow_fault(size_t page_index);
-    [[nodiscard]] PageFaultResponse handle_inode_fault(size_t page_index);
-    [[nodiscard]] PageFaultResponse handle_zero_fault(size_t page_index, PhysicalPage& page_in_slot_at_time_of_fault);
+    Result<void, PageFaultResponse> validate_access(PageFault const&);
 
     [[nodiscard]] bool map_individual_page_impl(size_t page_index);
     [[nodiscard]] bool map_individual_page_impl(size_t page_index, RefPtr<PhysicalPage>);

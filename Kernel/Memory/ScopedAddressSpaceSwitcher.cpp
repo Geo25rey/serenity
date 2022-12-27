@@ -27,14 +27,7 @@ ScopedAddressSpaceSwitcher::ScopedAddressSpaceSwitcher(Process& process)
 
 ScopedAddressSpaceSwitcher::~ScopedAddressSpaceSwitcher()
 {
-    InterruptDisabler disabler;
-#if ARCH(X86_64)
-    Thread::current()->regs().cr3 = m_previous_cr3;
-    write_cr3(m_previous_cr3);
-#elif ARCH(AARC64)
-    TODO_AARCH64();
-#endif
-    Thread::current()->set_user_address_space(m_previous_address_space);
+    Memory::MemoryManager::enter_address_space(*m_previous_address_space);
 }
 
 }
