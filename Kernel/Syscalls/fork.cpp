@@ -70,8 +70,8 @@ ErrorOr<FlatPtr> Process::sys$fork(RegisterState& regs)
         return {};
     }));
 
-    TRY(child->m_fds.with_exclusive([&](auto& child_fds) {
-        return m_fds.with_exclusive([&](auto& parent_fds) {
+    TRY(child->m_fds.with([&](auto& child_fds) {
+        return m_fds.with([&](auto& parent_fds) {
             return child_fds.try_clone(parent_fds);
         });
     }));

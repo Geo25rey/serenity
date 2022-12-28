@@ -47,7 +47,7 @@ ErrorOr<FlatPtr> Process::sys$poll(Userspace<Syscall::SC_poll_params const*> use
     Thread::SelectBlocker::FDVector fds_info;
     TRY(fds_info.try_ensure_capacity(params.nfds));
 
-    TRY(m_fds.with_shared([&](auto& fds) -> ErrorOr<void> {
+    TRY(m_fds.with([&](auto& fds) -> ErrorOr<void> {
         for (size_t i = 0; i < params.nfds; i++) {
             auto& pfd = fds_copy[i];
             LockRefPtr<OpenFileDescription> description;

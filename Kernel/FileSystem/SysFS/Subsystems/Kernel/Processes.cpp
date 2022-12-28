@@ -78,7 +78,7 @@ ErrorOr<void> SysFSOverallProcesses::try_generate(KBufferBuilder& builder)
         } else {
             TRY(process_object.add("tty"sv, ""));
         }
-        TRY(process_object.add("nfds"sv, process.fds().with_shared([](auto& fds) { return fds.open_count(); })));
+        TRY(process_object.add("nfds"sv, process.fds().with([](auto& fds) { return fds.open_count(); })));
         TRY(process_object.add("name"sv, process.name()));
         TRY(process_object.add("executable"sv, process.executable() ? TRY(process.executable()->try_serialize_absolute_path())->view() : ""sv));
 

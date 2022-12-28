@@ -599,7 +599,7 @@ ErrorOr<void> Process::do_exec(NonnullLockRefPtr<OpenFileDescription> main_progr
 
     clear_futex_queues_on_exec();
 
-    m_fds.with_exclusive([&](auto& fds) {
+    m_fds.with([&](auto& fds) {
         fds.change_each([&](auto& file_description_metadata) {
             if (file_description_metadata.is_valid() && file_description_metadata.flags() & FD_CLOEXEC)
                 file_description_metadata = {};
@@ -608,7 +608,7 @@ ErrorOr<void> Process::do_exec(NonnullLockRefPtr<OpenFileDescription> main_progr
 
     if (main_program_fd_allocation.has_value()) {
         main_program_description->set_readable(true);
-        m_fds.with_exclusive([&](auto& fds) { fds[main_program_fd_allocation->fd].set(move(main_program_description), FD_CLOEXEC); });
+        m_fds.with([&](auto& fds) { fds[main_program_fd_allocation->fd].set(move(main_program_description), FD_CLOEXEC); });
     }
 
     new_main_thread = nullptr;

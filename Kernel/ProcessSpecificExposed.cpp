@@ -128,7 +128,7 @@ ErrorOr<void> Process::traverse_file_descriptions_directory(FileSystemID fsid, F
     TRY(callback({ "."sv, { fsid, m_procfs_traits->component_index() }, 0 }));
     TRY(callback({ ".."sv, { fsid, m_procfs_traits->component_index() }, 0 }));
     size_t count = 0;
-    fds().with_shared([&](auto& fds) {
+    m_fds.with([&](auto& fds) {
         fds.enumerate([&](auto& file_description_metadata) {
             if (!file_description_metadata.is_valid()) {
                 count++;
@@ -150,7 +150,7 @@ ErrorOr<NonnullLockRefPtr<Inode>> Process::lookup_file_descriptions_directory(Pr
     if (!maybe_index.has_value())
         return ENOENT;
 
-    if (!m_fds.with_shared([&](auto& fds) { return fds.get_if_valid(*maybe_index); }))
+    if (!m_fds.with([&](auto& fds) { return fds.get_if_valid(*maybe_index); }))
         return ENOENT;
 
     return TRY(ProcFSProcessPropertyInode::try_create_for_file_description_link(procfs, *maybe_index, pid()));
@@ -219,7 +219,7 @@ ErrorOr<void> Process::procfs_get_fds_stats(KBufferBuilder& builder) const
 {
     auto array = TRY(JsonArraySerializer<>::try_create(builder));
 
-    return fds().with_shared([&](auto& fds) -> ErrorOr<void> {
+    return fds().with([&](auto& fds) -> ErrorOr<void> {
         if (fds.open_count() == 0) {
             TRY(array.finish());
             return {};
