@@ -75,14 +75,13 @@ private:
         explicit SharedCommittedCowPages(CommittedPhysicalPageSet&&);
         ~SharedCommittedCowPages();
 
-        [[nodiscard]] bool is_empty() const { return m_committed_pages.is_empty(); }
+        [[nodiscard]] bool is_empty() const;
 
         [[nodiscard]] NonnullRefPtr<PhysicalPage> take_one();
         void uncommit_one();
 
     private:
-        Spinlock m_lock { LockRank::None };
-        CommittedPhysicalPageSet m_committed_pages;
+        SpinlockProtected<CommittedPhysicalPageSet> m_committed_pages;
     };
 
     LockWeakPtr<AnonymousVMObject> m_cow_parent;

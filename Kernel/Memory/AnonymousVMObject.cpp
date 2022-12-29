@@ -408,7 +408,7 @@ Result<void, PageFaultResponse> AnonymousVMObject::handle_cow_fault(size_t page_
 }
 
 AnonymousVMObject::SharedCommittedCowPages::SharedCommittedCowPages(CommittedPhysicalPageSet&& committed_pages)
-    : m_committed_pages(move(committed_pages))
+    : m_committed_pages(LockRank::None, move(committed_pages))
 {
 }
 
@@ -416,14 +416,17 @@ AnonymousVMObject::SharedCommittedCowPages::~SharedCommittedCowPages() = default
 
 NonnullRefPtr<PhysicalPage> AnonymousVMObject::SharedCommittedCowPages::take_one()
 {
-    SpinlockLocker locker(m_lock);
-    return m_committed_pages.take_one();
+    return m_committed_pages.with([&](auto& pages) { return pages.take_one(); });
 }
 
 void AnonymousVMObject::SharedCommittedCowPages::uncommit_one()
 {
-    SpinlockLocker locker(m_lock);
-    m_committed_pages.uncommit_one();
+    return m_committed_pages.with([&](auto& pages) { return pages.uncommit_one(); });
+}
+
+bool AnonymousVMObject::SharedCommittedCowPages::is_empty() const
+{
+    return m_committed_pages.with([&](auto& pages) { return pages.is_empty(); });
 }
 
 Result<void, PageFaultResponse> AnonymousVMObject::handle_page_fault(size_t page_index)

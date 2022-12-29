@@ -107,14 +107,13 @@ public:
     }
 
     CommittedPhysicalPageSet(CommittedPhysicalPageSet&& other)
-        : m_page_count(exchange(other.m_page_count, 0))
+        : m_page_count(other.m_page_count.exchange(0))
     {
     }
 
     ~CommittedPhysicalPageSet();
 
     bool is_empty() const { return m_page_count == 0; }
-    size_t page_count() const { return m_page_count; }
 
     [[nodiscard]] NonnullRefPtr<PhysicalPage> take_one();
     void uncommit_one();
@@ -122,7 +121,7 @@ public:
     void operator=(CommittedPhysicalPageSet&&) = delete;
 
 private:
-    size_t m_page_count { 0 };
+    Atomic<size_t> m_page_count { 0 };
 };
 
 class MemoryManager {
