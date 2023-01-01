@@ -119,7 +119,6 @@ public:
 private:
     PageClient& m_client;
 
-    JS::Handle<HTML::BrowsingContext> m_top_level_browsing_context;
     WeakPtr<HTML::BrowsingContext> m_focused_context;
 
     JS::Handle<HTML::TraversableNavigable> m_top_level_traversable;

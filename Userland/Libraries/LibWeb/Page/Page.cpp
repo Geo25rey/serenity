@@ -19,7 +19,6 @@ namespace Web {
 Page::Page(PageClient& client)
     : m_client(client)
 {
-    m_top_level_browsing_context = JS::make_handle(*HTML::BrowsingContext::create_a_new_top_level_browsing_context(*this));
     m_top_level_traversable = JS::make_handle(HTML::TraversableNavigable::create_a_fresh_top_level_traversable(*this, AK::URL()));
 }
 
@@ -161,12 +160,12 @@ bool Page::handle_keyup(KeyCode key, unsigned modifiers, u32 code_point)
 
 HTML::BrowsingContext& Page::top_level_browsing_context()
 {
-    return *m_top_level_browsing_context;
+    return *m_top_level_traversable->active_browsing_context();
 }
 
 HTML::BrowsingContext const& Page::top_level_browsing_context() const
 {
-    return *m_top_level_browsing_context;
+    return *m_top_level_traversable->active_browsing_context();
 }
 
 template<typename ResponseType>
