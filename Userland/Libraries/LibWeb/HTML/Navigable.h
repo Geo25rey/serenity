@@ -19,6 +19,8 @@ class Navigable : public JS::Cell {
 public:
     virtual ~Navigable() override;
 
+    void initialize_navigable(JS::NonnullGCPtr<DocumentState>, JS::GCPtr<Navigable> parent_navigable);
+
     DeprecatedString id() const;
     JS::GCPtr<Navigable> parent() const;
 

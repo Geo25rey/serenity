@@ -621,6 +621,8 @@ public:
         return false;
     }
 
+    JS::GCPtr<HTML::Navigable> node_navigable() const;
+
 protected:
     Node(JS::Realm&, Document&, NodeType);
     Node(Document&, NodeType);

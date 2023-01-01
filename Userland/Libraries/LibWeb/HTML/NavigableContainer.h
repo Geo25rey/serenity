@@ -21,6 +21,9 @@ public:
     BrowsingContext* nested_browsing_context() { return m_nested_browsing_context; }
     BrowsingContext const* nested_browsing_context() const { return m_nested_browsing_context; }
 
+    JS::GCPtr<Navigable> nested_navigable() { return m_nested_navigable; }
+    JS::GCPtr<Navigable const> nested_navigable() const { return m_nested_navigable.ptr(); }
+
     const DOM::Document* content_document() const;
     DOM::Document const* content_document_without_origin_check() const;
 

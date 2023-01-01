@@ -292,7 +292,7 @@ public:
 
     HTML::Window& window() const { return const_cast<HTML::Window&>(*m_window); }
 
-    void set_window(Badge<HTML::BrowsingContext>, HTML::Window&);
+    void set_window(JS::NonnullGCPtr<HTML::Window>);
 
     WebIDL::ExceptionOr<void> write(Vector<DeprecatedString> const& strings);
     WebIDL::ExceptionOr<void> writeln(Vector<DeprecatedString> const& strings);
@@ -449,6 +449,8 @@ public:
     void did_stop_being_active_document_in_browsing_context(Badge<HTML::BrowsingContext>);
 
     bool query_command_supported(DeprecatedString const&) const;
+
+    void make_active();
 
 protected:
     virtual void visit_edges(Cell::Visitor&) override;

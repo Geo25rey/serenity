@@ -12,6 +12,7 @@
 #include <LibWeb/HTML/BrowsingContext.h>
 #include <LibWeb/HTML/BrowsingContextGroup.h>
 #include <LibWeb/HTML/CrossOrigin/CrossOriginOpenerPolicy.h>
+#include <LibWeb/HTML/DocumentState.h>
 #include <LibWeb/HTML/EventLoop/EventLoop.h>
 #include <LibWeb/HTML/HTMLAnchorElement.h>
 #include <LibWeb/HTML/HTMLInputElement.h>
@@ -199,7 +200,7 @@ JS::NonnullGCPtr<BrowsingContext> BrowsingContext::create_a_new_browsing_context
     auto document = DOM::Document::create(window->realm());
 
     // Non-standard
-    document->set_window({}, *window);
+    document->set_window(*window);
     window->set_associated_document(*document);
 
     document->set_quirks_mode(DOM::QuirksMode::Yes);
@@ -234,7 +235,8 @@ JS::NonnullGCPtr<BrowsingContext> BrowsingContext::create_a_new_browsing_context
     // 22. Append a new session history entry to browsingContext's session history whose URL is about:blank and document is document.
     JS::NonnullGCPtr<SessionHistoryEntry> new_entry = *browsing_context->heap().allocate_without_realm<SessionHistoryEntry>();
     new_entry->url = AK::URL("about:blank");
-    new_entry->document = document.ptr();
+    new_entry->document_state = *browsing_context->heap().allocate_without_realm<DocumentState>();
+    new_entry->document_state->document = document.ptr();
     new_entry->serialized_state = {};
     new_entry->policy_container = {};
     new_entry->scroll_restoration_mode = {};
@@ -327,7 +329,7 @@ void BrowsingContext::set_active_document(JS::NonnullGCPtr<DOM::Document> docume
     document->set_visibility_state({}, top_level_browsing_context().system_visibility_state());
 
     // 3. Set browsingContext's active window to window.
-    m_window_proxy->set_window({}, window);
+    m_window_proxy->set_window(window);
 
     // 4. Set window's associated Document to document.
     window.set_associated_document(document);
@@ -833,8 +835,8 @@ bool BrowsingContext::still_on_its_initial_about_blank_document() const
     // if browsingContext's session history's size is 1
     // and browsingContext's session history[0]'s document's is initial about:blank is true.
     return m_session_history.size() == 1
-        && m_session_history[0]->document
-        && m_session_history[0]->document->is_initial_about_blank();
+        && m_session_history[0]->document_state->document
+        && m_session_history[0]->document_state->document->is_initial_about_blank();
 }
 
 DOM::Document const* BrowsingContext::active_document() const
@@ -1070,7 +1072,8 @@ WebIDL::ExceptionOr<void> BrowsingContext::navigate_to_a_fragment(AK::URL const&
     //    and scroll restoration mode is the current entry's scroll restoration mode.
     JS::NonnullGCPtr<SessionHistoryEntry> new_entry = *heap().allocate_without_realm<SessionHistoryEntry>();
     new_entry->url = url;
-    new_entry->document = current_entry().document;
+    new_entry->document_state = *heap().allocate_without_realm<DocumentState>();
+    new_entry->document_state->document = current_entry().document_state->document;
     new_entry->serialized_state = {};
     new_entry->policy_container = current_entry().policy_container;
     new_entry->scroll_restoration_mode = current_entry().scroll_restoration_mode;
@@ -1095,7 +1098,7 @@ WebIDL::ExceptionOr<void> BrowsingContext::traverse_the_history(size_t entry_ind
     JS::GCPtr<SessionHistoryEntry> entry = m_session_history[entry_index];
 
     // 1. If entry's document is null, then:
-    if (!entry->document) {
+    if (!entry->document_state->document) {
         // 1. Assert: historyHandling is "default".
         VERIFY(history_handling == HistoryHandlingBehavior::Default);
 
@@ -1121,14 +1124,14 @@ WebIDL::ExceptionOr<void> BrowsingContext::traverse_the_history(size_t entry_ind
     // FIXME: 2. Save persisted state to the current entry.
 
     // 3. Let newDocument be entry's document.
-    JS::GCPtr<DOM::Document> new_document = entry->document.ptr();
+    JS::GCPtr<DOM::Document> new_document = entry->document_state->document.ptr();
 
     // 4. Assert: newDocument's is initial about:blank is false,
     //   i.e., we never traverse back to the initial about:blank Document because it always gets replaced when we navigate away from it.
     VERIFY(!new_document->is_initial_about_blank());
 
     // 5. If newDocument is different than the current entry's document, or historyHandling is "entry update" or "reload", then:
-    if (new_document.ptr() != current_entry().document.ptr()
+    if (new_document.ptr() != current_entry().document_state->document.ptr()
         || history_handling == HistoryHandlingBehavior::EntryUpdate) {
         // FIXME: 1. If newDocument's suspended timer handles is not empty:
         // FIXME:    1. Assert: newDocument's suspension time is not zero.
@@ -1146,7 +1149,7 @@ WebIDL::ExceptionOr<void> BrowsingContext::traverse_the_history(size_t entry_ind
     });
 
     // 3. If newDocument's origin is not same origin with the current entry's document's origin, then:
-    if (!new_document->origin().is_same_origin(current_entry().document->origin())) {
+    if (!new_document->origin().is_same_origin(current_entry().document_state->document->origin())) {
         // FIXME: 1. Let entriesToUpdate be all entries in the session history whose document's origin is same origin as the active document
         //           and that are contiguous with the current entry.
         // FIXME: 2. For each entryToUpdate of entriesToUpdate, set entryToUpdate's browsing context name to the current browsing context name.
@@ -1199,7 +1202,7 @@ WebIDL::ExceptionOr<void> BrowsingContext::traverse_the_history(size_t entry_ind
     // 8. If entry's URL's fragment is not identical to the current entry's URL's fragment,
     //    and entry's document equals the current entry's document,
     if (entry->url.fragment() != current_entry().url.fragment()
-        && entry->document.ptr() == current_entry().document.ptr()) {
+        && entry->document_state->document.ptr() == current_entry().document_state->document.ptr()) {
         // then set hashChanged to true, set oldURL to the current entry's URL, and set newURL to entry's URL.
         hash_changed = true;
         old_url = current_entry().url;
@@ -1319,11 +1322,11 @@ Vector<JS::Handle<DOM::Document>> BrowsingContext::document_family() const
 {
     HashTable<DOM::Document*> documents;
     for (auto& entry : m_session_history) {
-        if (!entry->document)
+        if (!entry->document_state->document)
             continue;
-        if (documents.set(const_cast<DOM::Document*>(entry->document.ptr())) == AK::HashSetResult::ReplacedExistingEntry)
+        if (documents.set(const_cast<DOM::Document*>(entry->document_state->document.ptr())) == AK::HashSetResult::ReplacedExistingEntry)
             continue;
-        for (auto& context : entry->document->list_of_descendant_browsing_contexts()) {
+        for (auto& context : entry->document_state->document->list_of_descendant_browsing_contexts()) {
             for (auto& document : context->document_family()) {
                 documents.set(document.ptr());
             }
@@ -1373,8 +1376,8 @@ void BrowsingContext::discard()
 
     // 1. Discard all Document objects for all the entries in browsingContext's session history.
     for (auto& entry : m_session_history) {
-        if (entry->document)
-            entry->document->discard();
+        if (entry->document_state->document)
+            entry->document_state->document->discard();
     }
 
     // AD-HOC:
@@ -1459,6 +1462,11 @@ bool BrowsingContext::is_ancestor_of(BrowsingContext const& other) const
             return true;
     }
     return false;
+}
+
+void BrowsingContext::set_window_proxy(JS::GCPtr<WindowProxy> window_proxy)
+{
+    m_window_proxy = move(window_proxy);
 }
 
 }

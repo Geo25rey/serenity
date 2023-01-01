@@ -6,6 +6,7 @@
 
 #include <LibWeb/DOM/Document.h>
 #include <LibWeb/HTML/BrowsingContext.h>
+#include <LibWeb/HTML/DocumentState.h>
 #include <LibWeb/HTML/Navigable.h>
 #include <LibWeb/HTML/SessionHistoryEntry.h>
 #include <LibWeb/HTML/TraversableNavigable.h>
@@ -69,7 +70,7 @@ JS::GCPtr<SessionHistoryEntry> Navigable::current_session_history_entry() const
 JS::GCPtr<DOM::Document> Navigable::active_document()
 {
     // A navigable's active document is its active session history entry's document.
-    return m_active_session_history_entry->document;
+    return m_active_session_history_entry->document_state->document;
 }
 
 // https://html.spec.whatwg.org/multipage/document-sequences.html#nav-bc
@@ -146,6 +147,28 @@ JS::GCPtr<TraversableNavigable> Navigable::top_level_traversable()
 
     // 3. Return navigable.
     return verify_cast<TraversableNavigable>(navigable);
+}
+
+// https://html.spec.whatwg.org/multipage/document-sequences.html#initialize-the-navigable
+void Navigable::initialize_navigable(JS::NonnullGCPtr<DocumentState> document_state, JS::GCPtr<Navigable> parent)
+{
+    // 1. Let entry be a new session history entry, with
+    JS::NonnullGCPtr<SessionHistoryEntry> entry = *heap().allocate_without_realm<SessionHistoryEntry>();
+
+    // URL: document's URL
+    entry->url = document_state->document->url();
+
+    // document state: documentState
+    entry->document_state = document_state;
+
+    // 2. Set navigable's current session history entry to entry.
+    m_current_session_history_entry = entry;
+
+    // 3. Set navigable's active session history entry to entry.
+    m_active_session_history_entry = entry;
+
+    // 4. Set navigable's parent to parent.
+    m_parent = parent;
 }
 
 }

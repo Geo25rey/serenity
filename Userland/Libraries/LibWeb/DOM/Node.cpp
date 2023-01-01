@@ -1542,4 +1542,10 @@ bool Node::is_following(Node const& other) const
     return false;
 }
 
+// https://html.spec.whatwg.org/multipage/document-sequences.html#node-navigable
+JS::GCPtr<HTML::Navigable> Node::node_navigable() const
+{
+    return document().navigable();
+}
+
 }

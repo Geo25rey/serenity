@@ -59,6 +59,7 @@
 #include <LibWeb/HTML/Parser/HTMLParser.h>
 #include <LibWeb/HTML/Scripting/ExceptionReporter.h>
 #include <LibWeb/HTML/Scripting/WindowEnvironmentSettingsObject.h>
+#include <LibWeb/HTML/TraversableNavigable.h>
 #include <LibWeb/HTML/Window.h>
 #include <LibWeb/HTML/WindowProxy.h>
 #include <LibWeb/HighResolutionTime/TimeOrigin.h>
@@ -2031,9 +2032,9 @@ void Document::check_favicon_after_loading_link_resource()
     dbgln_if(SPAM_DEBUG, "No favicon found to be used");
 }
 
-void Document::set_window(Badge<HTML::BrowsingContext>, HTML::Window& window)
+void Document::set_window(JS::NonnullGCPtr<HTML::Window> window)
 {
-    m_window = &window;
+    m_window = move(window);
 }
 
 CSS::StyleSheetList& Document::style_sheets()
@@ -2338,6 +2339,22 @@ JS::NonnullGCPtr<DOM::Document> Document::appropriate_template_contents_owner_do
     }
     // 2. Return doc.
     return *this;
+}
+
+// https://html.spec.whatwg.org/multipage/browsing-the-web.html#make-active
+void Document::make_active()
+{
+    // 1. Let window be document's relevant global object.
+    auto& window = verify_cast<HTML::Window>(HTML::relevant_global_object(*this));
+
+    // 2. Set document's browsing context's WindowProxy's [[Window]] internal slot value to window.
+    m_browsing_context->window_proxy()->set_window(window);
+
+    // 3. Set document's visibility state to document's node navigable's traversable navigable's system visibility state.
+    m_visibility_state = node_navigable()->traversable_navigable()->system_visibility_state();
+
+    // 4. Set window's relevant settings object's execution ready flag.
+    HTML::relevant_settings_object(window).execution_ready = true;
 }
 
 JS::GCPtr<HTML::Navigable> Document::navigable() const

@@ -124,6 +124,8 @@ public:
     HTML::WindowProxy* window_proxy();
     HTML::WindowProxy const* window_proxy() const;
 
+    void set_window_proxy(JS::GCPtr<WindowProxy>);
+
     JS::GCPtr<BrowsingContext> opener_browsing_context() const { return m_opener_browsing_context; }
 
     void set_opener_browsing_context(JS::GCPtr<BrowsingContext> browsing_context) { m_opener_browsing_context = browsing_context; }
