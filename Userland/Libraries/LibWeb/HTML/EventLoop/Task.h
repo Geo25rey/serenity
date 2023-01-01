@@ -29,6 +29,9 @@ public:
         Microtask,
         TimerTask,
         JavaScriptEngine,
+
+        // https://html.spec.whatwg.org/multipage/webappapis.html#navigation-and-traversal-task-source
+        NavigationAndTraversal,
     };
 
     static NonnullOwnPtr<Task> create(Source source, DOM::Document* document, JS::SafeFunction<void()> steps)
