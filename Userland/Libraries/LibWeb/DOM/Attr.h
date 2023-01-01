@@ -18,7 +18,7 @@ class Attr final : public Node {
     WEB_PLATFORM_OBJECT(Attr, Node);
 
 public:
-    static JS::NonnullGCPtr<Attr> create(Document&, FlyString local_name, DeprecatedString value, Element const* = nullptr);
+    static JS::NonnullGCPtr<Attr> create(Document&, FlyString local_name, DeprecatedString value, JS::GCPtr<Element> = nullptr);
     JS::NonnullGCPtr<Attr> clone(Document&);
 
     virtual ~Attr() override = default;
@@ -43,7 +43,7 @@ public:
     void handle_attribute_changes(Element&, DeprecatedString const& old_value, DeprecatedString const& new_value);
 
 private:
-    Attr(Document&, QualifiedName, DeprecatedString value, Element const*);
+    Attr(Document&, QualifiedName, DeprecatedString value, JS::GCPtr<Element>);
 
     virtual void visit_edges(Cell::Visitor&) override;
 

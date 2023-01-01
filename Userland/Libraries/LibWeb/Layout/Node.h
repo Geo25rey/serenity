@@ -43,8 +43,7 @@ public:
     size_t serial_id() const { return m_serial_id; }
 
     bool is_anonymous() const;
-    DOM::Node const* dom_node() const;
-    DOM::Node* dom_node();
+    JS::GCPtr<DOM::Node> dom_node() const;
 
     bool is_generated() const { return m_generated; }
     void set_generated(bool b) { m_generated = b; }

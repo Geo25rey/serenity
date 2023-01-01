@@ -36,7 +36,7 @@ void SVGFormattingContext::run(Box const& box, LayoutMode, [[maybe_unused]] Avai
     auto root_offset = m_state.get(box).offset;
 
     box.for_each_child_of_type<BlockContainer>([&](BlockContainer const& child_box) {
-        if (is<SVG::SVGForeignObjectElement>(child_box.dom_node())) {
+        if (child_box.dom_node() && is<SVG::SVGForeignObjectElement>(*child_box.dom_node())) {
             Layout::BlockFormattingContext bfc(m_state, child_box, this);
             bfc.run(child_box, LayoutMode::Normal, available_space);
 

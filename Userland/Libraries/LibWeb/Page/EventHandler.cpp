@@ -29,7 +29,7 @@ static JS::GCPtr<DOM::Node> dom_node_for_event_dispatch(Painting::Paintable cons
     if (auto node = paintable.mouse_event_target())
         return node;
     if (auto node = paintable.dom_node())
-        return node;
+        return const_cast<DOM::Node*>(node);
     if (auto* layout_parent = paintable.layout_node().parent())
         return layout_parent->dom_node();
     return nullptr;

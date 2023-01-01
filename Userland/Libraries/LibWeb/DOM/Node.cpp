@@ -108,28 +108,28 @@ DeprecatedString Node::base_uri() const
     return document().base_url().to_deprecated_string();
 }
 
-const HTML::HTMLAnchorElement* Node::enclosing_link_element() const
+JS::GCPtr<HTML::HTMLAnchorElement> Node::enclosing_link_element() const
 {
     for (auto* node = this; node; node = node->parent()) {
         if (!is<HTML::HTMLAnchorElement>(*node))
             continue;
         auto const& anchor_element = static_cast<HTML::HTMLAnchorElement const&>(*node);
         if (anchor_element.has_attribute(HTML::AttributeNames::href))
-            return &anchor_element;
+            return const_cast<HTML::HTMLAnchorElement&>(anchor_element);
     }
     return nullptr;
 }
 
-const HTML::HTMLElement* Node::enclosing_html_element() const
+JS::GCPtr<HTML::HTMLElement> Node::enclosing_html_element() const
 {
-    return first_ancestor_of_type<HTML::HTMLElement>();
+    return const_cast<Node*>(this)->first_ancestor_of_type<HTML::HTMLElement>();
 }
 
-const HTML::HTMLElement* Node::enclosing_html_element_with_attribute(FlyString const& attribute) const
+JS::GCPtr<HTML::HTMLElement> Node::enclosing_html_element_with_attribute(FlyString const& attribute) const
 {
     for (auto* node = this; node; node = node->parent()) {
-        if (is<HTML::HTMLElement>(*node) && verify_cast<HTML::HTMLElement>(*node).has_attribute(attribute))
-            return verify_cast<HTML::HTMLElement>(node);
+        if (is<HTML::HTMLElement>(*node) && static_cast<HTML::HTMLElement const&>(*node).has_attribute(attribute))
+            return static_cast<HTML::HTMLElement&>(*const_cast<Node*>(node));
     }
     return nullptr;
 }

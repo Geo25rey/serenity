@@ -617,7 +617,7 @@ void PaintableWithLines::paint(PaintContext& context, PaintPhase phase) const
     if (phase == PaintPhase::FocusOutline) {
         for (auto& line_box : m_line_boxes) {
             for (auto& fragment : line_box.fragments()) {
-                auto* node = fragment.layout_node().dom_node();
+                auto node = fragment.layout_node().dom_node();
                 if (!node)
                     continue;
                 auto* parent = node->parent_element();

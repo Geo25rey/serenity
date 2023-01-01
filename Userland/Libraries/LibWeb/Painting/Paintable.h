@@ -110,8 +110,7 @@ public:
     Layout::Node const& layout_node() const { return m_layout_node; }
     Layout::Node& layout_node() { return const_cast<Layout::Node&>(m_layout_node); }
 
-    DOM::Node* dom_node() { return layout_node().dom_node(); }
-    DOM::Node const* dom_node() const { return layout_node().dom_node(); }
+    DOM::Node* dom_node() const { return layout_node().dom_node(); }
 
     auto const& computed_values() const { return m_layout_node.computed_values(); }
 

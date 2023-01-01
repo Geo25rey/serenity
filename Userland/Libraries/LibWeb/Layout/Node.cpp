@@ -678,14 +678,7 @@ bool Node::is_anonymous() const
     return m_anonymous;
 }
 
-DOM::Node const* Node::dom_node() const
-{
-    if (m_anonymous)
-        return nullptr;
-    return m_dom_node.ptr();
-}
-
-DOM::Node* Node::dom_node()
+JS::GCPtr<DOM::Node> Node::dom_node() const
 {
     if (m_anonymous)
         return nullptr;

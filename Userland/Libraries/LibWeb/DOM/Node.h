@@ -122,9 +122,9 @@ public:
 
     JS::GCPtr<Document> owner_document() const;
 
-    const HTML::HTMLAnchorElement* enclosing_link_element() const;
-    const HTML::HTMLElement* enclosing_html_element() const;
-    const HTML::HTMLElement* enclosing_html_element_with_attribute(FlyString const&) const;
+    JS::GCPtr<HTML::HTMLAnchorElement> enclosing_link_element() const;
+    JS::GCPtr<HTML::HTMLElement> enclosing_html_element() const;
+    JS::GCPtr<HTML::HTMLElement> enclosing_html_element_with_attribute(FlyString const&) const;
 
     DeprecatedString child_text_content() const;
 

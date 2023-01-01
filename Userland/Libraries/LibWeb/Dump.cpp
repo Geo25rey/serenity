@@ -95,7 +95,7 @@ void dump_tree(StringBuilder& builder, Layout::Node const& layout_node, bool sho
     FlyString tag_name;
     if (layout_node.is_anonymous())
         tag_name = "(anonymous)";
-    else if (is<DOM::Element>(layout_node.dom_node()))
+    else if (is<DOM::Element>(*layout_node.dom_node()))
         tag_name = verify_cast<DOM::Element>(*layout_node.dom_node()).local_name();
     else
         tag_name = layout_node.dom_node()->node_name();
@@ -276,7 +276,7 @@ void dump_tree(StringBuilder& builder, Layout::Node const& layout_node, bool sho
         }
     }
 
-    if (show_specified_style && layout_node.dom_node() && layout_node.dom_node()->is_element() && verify_cast<DOM::Element>(layout_node.dom_node())->computed_css_values()) {
+    if (show_specified_style && layout_node.dom_node() && layout_node.dom_node()->is_element() && verify_cast<DOM::Element>(*layout_node.dom_node()).computed_css_values()) {
         struct NameAndValue {
             DeprecatedString name;
             DeprecatedString value;

@@ -136,7 +136,7 @@ private:
             }
 
             if (!contained_in_nodes)
-                return previous_sibling;
+                return const_cast<Node*>(previous_sibling);
         }
 
         return nullptr;
@@ -161,7 +161,7 @@ private:
             }
 
             if (!contained_in_nodes)
-                return next_sibling;
+                return const_cast<Node*>(next_sibling);
         }
 
         return nullptr;

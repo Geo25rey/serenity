@@ -95,18 +95,8 @@ public:
     {
     }
 
-    GCPtr(T const& ptr)
-        : m_ptr(&const_cast<T&>(ptr))
-    {
-    }
-
     GCPtr(T* ptr)
         : m_ptr(ptr)
-    {
-    }
-
-    GCPtr(T const* ptr)
-        : m_ptr(const_cast<T*>(ptr))
     {
     }
 
