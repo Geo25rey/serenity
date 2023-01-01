@@ -264,6 +264,7 @@ set(SOURCES
     HTML/NavigableContainer.cpp
     HTML/Navigator.cpp
     HTML/NavigatorID.cpp
+    HTML/POSTResource.cpp
     HTML/PageTransitionEvent.cpp
     HTML/Parser/Entities.cpp
     HTML/Parser/HTMLEncodingDetection.cpp

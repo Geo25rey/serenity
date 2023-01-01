@@ -344,6 +344,8 @@ class WorkerEnvironmentSettingsObject;
 class WorkerGlobalScope;
 class WorkerLocation;
 class WorkerNavigator;
+
+struct POSTResource;
 }
 
 namespace Web::HighResolutionTime {
