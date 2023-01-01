@@ -97,13 +97,13 @@ JS::NonnullGCPtr<TraversableNavigable> TraversableNavigable::create_a_new_top_le
 }
 
 // https://html.spec.whatwg.org/multipage/document-sequences.html#create-a-fresh-top-level-traversable
-JS::NonnullGCPtr<TraversableNavigable> TraversableNavigable::create_a_fresh_top_level_traversable(Page& page, AK::URL const& initial_navigation_url)
+JS::NonnullGCPtr<TraversableNavigable> TraversableNavigable::create_a_fresh_top_level_traversable(Page& page, AK::URL const& initial_navigation_url, Optional<POSTResource> initial_navigation_post_resource)
 {
     // 1. Let traversable be the result of creating a new top-level traversable given null and the empty string.
     auto traversable = create_a_new_top_level_traversable(page, nullptr, "");
 
-    // FIXME: 2. Navigate traversable to initialNavigationURL using traversable's active document, with documentResource set to initialNavigationPostResource.
-    (void)initial_navigation_url;
+    // 2. Navigate traversable to initialNavigationURL using traversable's active document, with documentResource set to initialNavigationPostResource.
+    (void)traversable->navigate(initial_navigation_url, *traversable->active_document(), initial_navigation_post_resource);
 
     // 3. Return traversable.
     return traversable;

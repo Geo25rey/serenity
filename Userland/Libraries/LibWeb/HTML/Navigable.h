@@ -9,6 +9,7 @@
 #include <AK/DeprecatedString.h>
 #include <LibJS/Heap/Cell.h>
 #include <LibWeb/Forward.h>
+#include <LibWeb/HTML/POSTResource.h>
 
 namespace Web::HTML {
 
@@ -49,6 +50,20 @@ public:
     JS::GCPtr<TraversableNavigable> top_level_traversable();
 
     static JS::GCPtr<Navigable> navigable_with_active_document(JS::NonnullGCPtr<DOM::Document>);
+
+    WebIDL::ExceptionOr<void> navigate(
+        AK::URL const&,
+        JS::NonnullGCPtr<DOM::Document> source_document,
+        Variant<Optional<POSTResource>, DeprecatedString> document_resource = Optional<POSTResource> {},
+        JS::GCPtr<Fetch::Infrastructure::Response> = nullptr,
+        bool exceptions_enabled = false,
+        HistoryHandlingBehavior = HistoryHandlingBehavior::Push,
+        DeprecatedString csp_navigation_type = "other",
+        ReferrerPolicy::ReferrerPolicy = ReferrerPolicy::ReferrerPolicy::EmptyString);
+
+    WebIDL::ExceptionOr<void> navigate_to_a_fragment(AK::URL const&, HistoryHandlingBehavior, DeprecatedString navigation_id);
+
+    WebIDL::ExceptionOr<void> navigate_to_a_javascript_url(AK::URL const&, HistoryHandlingBehavior, Origin const& initiator_origin, DeprecatedString csp_navigation_type);
 
 protected:
     Navigable();
