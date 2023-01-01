@@ -2480,6 +2480,8 @@ void Document::make_active()
     m_browsing_context->window_proxy()->set_window(window);
 
     // 3. Set document's visibility state to document's node navigable's traversable navigable's system visibility state.
+    VERIFY(node_navigable());
+    VERIFY(node_navigable()->traversable_navigable());
     m_visibility_state = node_navigable()->traversable_navigable()->system_visibility_state();
 
     // 4. Set window's relevant settings object's execution ready flag.
@@ -2488,7 +2490,7 @@ void Document::make_active()
 
 JS::GCPtr<HTML::Navigable> Document::navigable() const
 {
-    return m_navigable;
+    return HTML::Navigable::navigable_with_active_document(*this);
 }
 
 }
