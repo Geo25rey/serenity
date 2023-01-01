@@ -10,6 +10,7 @@ namespace Web::ReferrerPolicy {
 
 // https://w3c.github.io/webappsec-referrer-policy/#enumdef-referrerpolicy
 enum class ReferrerPolicy {
+    EmptyString,
     NoReferrer,
     NoReferrerWhenDowngrade,
     SameOrigin,
