@@ -11,6 +11,7 @@
 #include <AK/LexicalPath.h>
 #include <AK/Queue.h>
 #include <AK/QuickSort.h>
+#include <LibCore/Stream.h>
 #include <LibIDL/Types.h>
 
 Vector<StringView> s_header_search_paths;
@@ -2261,6 +2262,9 @@ private:
 )~~~");
 
     for (auto const& overload_set : interface.overload_sets) {
+        // Skip over functions implemented in JS.
+        if (overload_set.value.first().extended_attributes.contains("JS"))
+            continue;
         auto function_generator = generator.fork();
         function_generator.set("function.name:snakecase", make_input_acceptable_cpp(overload_set.key.to_snakecase()));
         function_generator.append(R"~~~(
@@ -2399,6 +2403,24 @@ void generate_prototype_implementation(IDL::Interface const& interface, StringBu
 
 )~~~");
 
+    bool has_js_functions = false;
+    for (auto& function : interface.functions) {
+        if (!function.extended_attributes.contains("JS"))
+            continue;
+        has_js_functions = true;
+        break;
+    }
+
+    if (has_js_functions) {
+        generator.append(R"~~~(
+#include <LibJS/AST.h>
+#include <LibJS/Lexer.h>
+#include <LibJS/Parser.h>
+#include <LibJS/Runtime/ECMAScriptFunctionObject.h>
+#include <LibJS/Runtime/GlobalEnvironment.h>
+)~~~");
+    }
+
     for (auto& path : interface.required_imported_paths)
         generate_include_for(generator, path);
 
@@ -2509,6 +2531,9 @@ void @prototype_class@::initialize(JS::Realm& realm)
 
     // https://webidl.spec.whatwg.org/#es-operations
     for (auto const& overload_set : interface.overload_sets) {
+        // Skip over functions implemented in JS.
+        if (overload_set.value.first().extended_attributes.contains("JS"))
+            continue;
         auto function_generator = generator.fork();
         function_generator.set("function.name", overload_set.key);
         function_generator.set("function.name:snakecase", make_input_acceptable_cpp(overload_set.key.to_snakecase()));
@@ -2523,6 +2548,31 @@ void @prototype_class@::initialize(JS::Realm& realm)
 
         function_generator.append(R"~~~(
     define_native_function(realm, "@function.name@", @function.name:snakecase@, @function.length@, default_attributes);
+)~~~");
+    }
+
+    for (auto const& function : interface.functions) {
+        if (!function.extended_attributes.contains("JS"))
+            continue;
+        auto function_generator = generator.fork();
+        function_generator.set("function.name", function.name);
+        auto filename = DeprecatedString::formatted("/home/kling/src/serenity/Userland/Libraries/LibWeb/DOM/{}.{}.js", interface.name, function.name);
+        auto file = MUST(Core::Stream::File::open(filename, Core::Stream::OpenMode::Read));
+        auto data = MUST(file->read_until_eof());
+        function_generator.set("function.source", DeprecatedString(data.bytes()));
+        function_generator.append(R"~~~(
+    {
+        bool contains_direct_call_to_eval = false;
+        auto source_text = DeprecatedString(R"XXX(@function.source@)XXX");
+        auto parser = JS::Parser { JS::Lexer { source_text } };
+        auto function_expression = parser.parse_function_node<JS::FunctionDeclaration>();
+
+        // Built-in functions should never have parse errors.
+        VERIFY(!parser.has_errors());
+
+        auto function = JS::ECMAScriptFunctionObject::create(realm, "", move(source_text), function_expression->body(), function_expression->parameters(), function_expression->function_length(), &realm.global_environment(), nullptr, function_expression->kind(), function_expression->is_strict_mode(), function_expression->might_need_arguments_object(), contains_direct_call_to_eval);
+        define_direct_property("@function.name@", function, default_attributes);
+    }
 )~~~");
     }
 
@@ -2703,8 +2753,12 @@ JS_DEFINE_NATIVE_FUNCTION(@prototype_class@::@attribute.setter_callback@)
     }
 
     // Implementation: Functions
-    for (auto& function : interface.functions)
+    for (auto& function : interface.functions) {
+        // Skip over functions implemented in JS.
+        if (function.extended_attributes.contains("JS"))
+            continue;
         generate_function(generator, function, StaticFunction::No, interface.prototype_class, interface.fully_qualified_name, interface);
+    }
     for (auto const& overload_set : interface.overload_sets) {
         if (overload_set.value.size() == 1)
             continue;
