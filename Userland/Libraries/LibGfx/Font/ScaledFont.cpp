@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#pragma clang optimize off
+
 #include <AK/Utf32View.h>
 #include <AK/Utf8View.h>
 #include <LibGfx/Font/Emoji.h>

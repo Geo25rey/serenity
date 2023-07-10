@@ -14,6 +14,7 @@
 #include <LibGfx/Font/OpenType/Font.h>
 #include <LibGfx/Font/Typeface.h>
 #include <LibGfx/Font/WOFF/Font.h>
+#include <LibGfx/Font/WOFF2/Font.h>
 
 namespace Gfx {
 
@@ -156,6 +157,12 @@ void FontDatabase::load_all_fonts_from_path(DeprecatedString const& root)
                 }
             } else if (path.ends_with(".woff"sv)) {
                 if (auto font_or_error = WOFF::Font::try_load_from_file(path); !font_or_error.is_error()) {
+                    auto font = font_or_error.release_value();
+                    auto typeface = get_or_create_typeface(font->family(), font->variant());
+                    typeface->set_vector_font(move(font));
+                }
+            } else if (path.ends_with(".woff2"sv)) {
+                if (auto font_or_error = WOFF2::Font::try_load_from_file(path); !font_or_error.is_error()) {
                     auto font = font_or_error.release_value();
                     auto typeface = get_or_create_typeface(font->family(), font->variant());
                     typeface->set_vector_font(move(font));

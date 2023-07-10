@@ -7,6 +7,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#pragma clang optimize off
+
 #include <AK/BinarySearch.h>
 #include <AK/Checked.h>
 #include <AK/Debug.h>

@@ -22,3 +22,8 @@ target_link_libraries(RequestServer PRIVATE LibCore LibMain LibCrypto LibFileSys
 if (ANDROID)
     link_android_libs(RequestServer)
 endif()
+
+if (ENABLE_ADDRESS_SANITIZER)
+    add_compile_options(-fsanitize=address -fsanitize-recover=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()

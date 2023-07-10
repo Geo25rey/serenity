@@ -36,21 +36,6 @@ enum class SimpleGlyfFlags {
     YPositiveShortVector = 0x24,
 };
 
-enum class CompositeGlyfFlags {
-    Arg1AndArg2AreWords = 0x0001,
-    ArgsAreXYValues = 0x0002,
-    RoundXYToGrid = 0x0004,
-    WeHaveAScale = 0x0008,
-    MoreComponents = 0x0020,
-    WeHaveAnXAndYScale = 0x0040,
-    WeHaveATwoByTwo = 0x0080,
-    WeHaveInstructions = 0x0100,
-    UseMyMetrics = 0x0200,
-    OverlapCompound = 0x0400, // Not relevant - can overlap without this set
-    ScaledComponentOffset = 0x0800,
-    UnscaledComponentOffset = 0x1000,
-};
-
 class PointIterator {
 public:
     struct Item {

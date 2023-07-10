@@ -30,7 +30,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(cmake/EnableLLD.cmake)
 
 if (ENABLE_ADDRESS_SANITIZER)
-    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_compile_options(-fsanitize=address -fsanitize-recover=address -fno-omit-frame-pointer)
     add_link_options(-fsanitize=address)
 endif()
 
