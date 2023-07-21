@@ -48,9 +48,8 @@ DeprecatedString Instruction::to_deprecated_string(Bytecode::Executable const& e
 
 namespace JS::Bytecode::Op {
 
-static ThrowCompletionOr<void> put_by_property_key(VM& vm, Value base, Value this_value, Value value, PropertyKey name, PropertyKind kind)
+static ThrowCompletionOr<void> put_by_property_key(VM& vm, Value base, NonnullGCPtr<Object> object, Value this_value, Value value, PropertyKey name, PropertyKind kind)
 {
-    auto object = TRY(base.to_object(vm));
     if (kind == PropertyKind::Getter || kind == PropertyKind::Setter) {
         // The generator should only pass us functions for getters and setters.
         VERIFY(value.is_function());
@@ -680,7 +679,7 @@ ThrowCompletionOr<void> PutById::execute_impl(Bytecode::Interpreter& interpreter
     auto value = interpreter.accumulator();
     auto base = interpreter.reg(m_base);
     PropertyKey name = interpreter.current_executable().get_identifier(m_property);
-    TRY(put_by_property_key(vm, base, base, value, name, m_kind));
+    TRY(put_by_property_key(vm, base, TRY(base.to_object(vm)), base, value, name, m_kind));
     interpreter.accumulator() = value;
     return {};
 }
@@ -692,7 +691,7 @@ ThrowCompletionOr<void> PutByIdWithThis::execute_impl(Bytecode::Interpreter& int
     auto value = interpreter.accumulator();
     auto base = interpreter.reg(m_base);
     PropertyKey name = interpreter.current_executable().get_identifier(m_property);
-    TRY(put_by_property_key(vm, base, interpreter.reg(m_this_value), value, name, m_kind));
+    TRY(put_by_property_key(vm, base, TRY(base.to_object(vm)), interpreter.reg(m_this_value), value, name, m_kind));
     interpreter.accumulator() = value;
     return {};
 }
@@ -1219,9 +1218,16 @@ ThrowCompletionOr<void> PutByValue::execute_impl(Bytecode::Interpreter& interpre
     auto value = interpreter.accumulator();
 
     auto base = interpreter.reg(m_base);
+    auto object = TRY(base.to_object(vm));
+
+    if (m_kind == PropertyKind::Spread) {
+        TRY(object->copy_data_properties(vm, value, {}));
+        interpreter.accumulator() = value;
+        return {};
+    }
 
     auto property_key = TRY(interpreter.reg(m_property).to_property_key(vm));
-    TRY(put_by_property_key(vm, base, base, value, property_key, m_kind));
+    TRY(put_by_property_key(vm, base, object, base, value, property_key, m_kind));
     interpreter.accumulator() = value;
     return {};
 }
@@ -1234,9 +1240,10 @@ ThrowCompletionOr<void> PutByValueWithThis::execute_impl(Bytecode::Interpreter& 
     auto value = interpreter.accumulator();
 
     auto base = interpreter.reg(m_base);
+    auto object = TRY(base.to_object(vm));
 
     auto property_key = TRY(interpreter.reg(m_property).to_property_key(vm));
-    TRY(put_by_property_key(vm, base, interpreter.reg(m_this_value), value, property_key, m_kind));
+    TRY(put_by_property_key(vm, base, object, interpreter.reg(m_this_value), value, property_key, m_kind));
     interpreter.accumulator() = value;
     return {};
 }
