@@ -9,6 +9,7 @@
 #include <AK/CharacterTypes.h>
 #include <AK/Function.h>
 #include <AK/Utf16View.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibJS/Runtime/AbstractOperations.h>
 #include <LibJS/Runtime/Array.h>
 #include <LibJS/Runtime/Error.h>
@@ -170,6 +171,8 @@ static Value make_match_indices_index_pair_array(VM& vm, Utf16View const& string
 // 22.2.7.2 RegExpBuiltInExec ( R, S ), https://github.com/tc39/proposal-regexp-legacy-features#regexpbuiltinexec--r-s-
 static ThrowCompletionOr<Value> regexp_builtin_exec(VM& vm, RegExpObject& regexp_object, Utf16String string)
 {
+    JS::HighLevelActivityScope scope("Regex"sv);
+
     auto& realm = *vm.current_realm();
 
     // 1. Let length be the length of S.

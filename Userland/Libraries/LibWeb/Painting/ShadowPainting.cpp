@@ -10,6 +10,7 @@
 #include <LibGfx/DisjointRectSet.h>
 #include <LibGfx/Filters/StackBlurFilter.h>
 #include <LibGfx/Painter.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/Layout/LineBoxFragment.h>
 #include <LibWeb/Layout/Node.h>
 #include <LibWeb/Painting/BorderPainting.h>
@@ -68,7 +69,10 @@ static void paint_inner_box_shadow(PaintContext& context, CSSPixelRect const& co
         shadow_painter.clear_rect(inner_shadow_rect, Color::Transparent);
     }
     Gfx::StackBlurFilter filter(*shadow_bitmap);
-    filter.process_rgba(blur_radius.value(), box_shadow_data.color);
+    {
+        JS::HighLevelActivityScope scope("Paint: Box shadow blur"sv);
+        filter.process_rgba(blur_radius.value(), box_shadow_data.color);
+    }
     Gfx::PainterStateSaver save { painter };
     painter.add_clip_rect(device_content_rect_int);
     painter.blit({ device_content_rect_int.left() - blur_radius.value(), device_content_rect_int.top() - blur_radius.value() },
@@ -230,7 +234,10 @@ static void paint_outer_box_shadow(PaintContext& context, CSSPixelRect const& co
         shadow_bitmap_rect.shrunken(double_radius, double_radius, double_radius, double_radius).to_type<int>(),
         box_shadow_data.color, top_left_shadow_corner, top_right_shadow_corner, bottom_right_shadow_corner, bottom_left_shadow_corner);
     Gfx::StackBlurFilter filter(*shadow_bitmap);
-    filter.process_rgba(blur_radius.value(), box_shadow_data.color);
+    {
+        JS::HighLevelActivityScope scope("Paint: Box shadow blur"sv);
+        filter.process_rgba(blur_radius.value(), box_shadow_data.color);
+    }
 
     auto paint_shadow_infill = [&] {
         if (!border_radii.has_any_radius())
@@ -445,7 +452,10 @@ void paint_text_shadow(PaintContext& context, Layout::LineBoxFragment const& fra
 
         // Blur
         Gfx::StackBlurFilter filter(*shadow_bitmap);
-        filter.process_rgba(blur_radius.value(), layer.color);
+        {
+            JS::HighLevelActivityScope scope("Paint: Text shadow blur"sv);
+            filter.process_rgba(blur_radius.value(), layer.color);
+        }
 
         auto draw_rect = context.enclosing_device_rect(fragment.absolute_rect());
         DevicePixelPoint draw_location {

@@ -57,8 +57,6 @@ void Interpreter::visit_edges(Cell::Visitor& visitor)
 // 16.1.6 ScriptEvaluation ( scriptRecord ), https://tc39.es/ecma262/#sec-runtime-semantics-scriptevaluation
 ThrowCompletionOr<Value> Interpreter::run(Script& script_record, JS::GCPtr<Environment> lexical_environment_override)
 {
-    HighLevelActivityScope scope("JS execution"sv);
-
     auto& vm = this->vm();
 
     // 1. Let globalEnv be scriptRecord.[[Realm]].[[GlobalEnv]].
@@ -183,6 +181,8 @@ ThrowCompletionOr<Value> Interpreter::run(SourceTextModule& module)
 
 Interpreter::ValueAndFrame Interpreter::run_and_return_frame(Realm& realm, Executable& executable, BasicBlock const* entry_point, CallFrame* in_frame)
 {
+    HighLevelActivityScope scope("JS execution"sv);
+
     dbgln_if(JS_BYTECODE_DEBUG, "Bytecode::Interpreter will run unit {:p}", &executable);
 
     TemporaryChange restore_executable { m_current_executable, &executable };
