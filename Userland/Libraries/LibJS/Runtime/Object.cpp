@@ -7,6 +7,7 @@
 
 #include <AK/DeprecatedString.h>
 #include <AK/TypeCasts.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibJS/Interpreter.h>
 #include <LibJS/Runtime/AbstractOperations.h>
 #include <LibJS/Runtime/Accessor.h>

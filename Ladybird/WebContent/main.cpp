@@ -13,6 +13,7 @@
 #include "../WebSocketClientManagerLadybird.h"
 #include <AK/LexicalPath.h>
 #include <AK/Platform.h>
+#include <AK/QuickSort.h>
 #include <LibAudio/Loader.h>
 #include <LibCore/ArgsParser.h>
 #include <LibCore/EventLoop.h>
@@ -21,7 +22,9 @@
 #include <LibCore/SystemServerTakeover.h>
 #include <LibIPC/ConnectionFromClient.h>
 #include <LibJS/Bytecode/Interpreter.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibMain/Main.h>
+#include <LibThreading/Thread.h>
 #include <LibWeb/Bindings/MainThreadVM.h>
 #include <LibWeb/Loader/ContentFilter.h>
 #include <LibWeb/Loader/FrameLoader.h>
@@ -47,6 +50,43 @@ extern DeprecatedString s_serenity_resource_root;
 ErrorOr<int> serenity_main(Main::Arguments arguments)
 {
     QGuiApplication app(arguments.argc, arguments.argv);
+
+    auto hla_thread = Threading::Thread::construct([]() -> intptr_t {
+        HashMap<StringView, int> activity_counts;
+        size_t total_count = 0;
+        for (;;) {
+            auto activity = JS::get_high_level_activity();
+            if (activity.is_null())
+                continue;
+            activity_counts.ensure(activity)++;
+            total_count++;
+
+            if ((total_count % 1000000) == 0) {
+                struct E {
+                    StringView name;
+                    int value;
+                };
+                Vector<E> entries;
+                entries.ensure_capacity(activity_counts.size());
+                for (auto& it : activity_counts) {
+                    if (it.value < 1000) // Ignore noise.
+                        continue;
+                    entries.unchecked_append({ it.key, it.value });
+                }
+                quick_sort(entries, [](auto& a, auto& b) { return a.value < b.value; });
+
+                dbgln("=======================");
+                for (auto& it : entries.in_reverse()) {
+                    double percent = (double)it.value / (double)total_count * 100.0;
+                    if (percent < 1)
+                        continue;
+                    dbgln("{}% {}", (int)percent, it.name);
+                }
+            }
+        }
+        return 0;
+    });
+    hla_thread->start();
 
 #if defined(AK_OS_MACOS)
     prohibit_interaction();

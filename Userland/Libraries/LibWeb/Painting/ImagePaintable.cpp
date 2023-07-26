@@ -5,6 +5,7 @@
  */
 
 #include <LibGfx/StylePainter.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/HTML/DecodedImageData.h>
 #include <LibWeb/HTML/HTMLImageElement.h>
 #include <LibWeb/HTML/ImageRequest.h>
@@ -42,6 +43,8 @@ Layout::ImageBox const& ImagePaintable::layout_box() const
 
 void ImagePaintable::paint(PaintContext& context, PaintPhase phase) const
 {
+    JS::HighLevelActivityScope scope("Paint: Image"sv);
+
     if (!is_visible())
         return;
 

@@ -9,6 +9,7 @@
 #include <AK/Error.h>
 #include <AK/Optional.h>
 #include <AK/TemporaryChange.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/CSS/StyleComputer.h>
 #include <LibWeb/CSS/StyleValues/DisplayStyleValue.h>
 #include <LibWeb/CSS/StyleValues/IdentifierStyleValue.h>
@@ -326,6 +327,8 @@ ErrorOr<void> TreeBuilder::create_layout_tree(DOM::Node& dom_node, TreeBuilder::
 
 JS::GCPtr<Layout::Node> TreeBuilder::build(DOM::Node& dom_node)
 {
+    JS::HighLevelActivityScope scope("Layout TreeBuilder"sv);
+
     VERIFY(dom_node.is_document());
 
     Context context;

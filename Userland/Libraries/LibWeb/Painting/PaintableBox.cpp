@@ -6,6 +6,7 @@
  */
 
 #include <AK/GenericShorthands.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibUnicode/CharacterTypes.h>
 #include <LibWeb/DOM/Document.h>
 #include <LibWeb/HTML/HTMLHtmlElement.h>
@@ -307,6 +308,7 @@ Vector<ShadowData> PaintableBox::resolve_box_shadow_data() const
 
 void PaintableBox::paint_box_shadow(PaintContext& context) const
 {
+    JS::HighLevelActivityScope scope("Paint: Box shadow"sv);
     auto resolved_box_shadow_data = resolve_box_shadow_data();
     if (resolved_box_shadow_data.is_empty())
         return;
@@ -593,6 +595,7 @@ void PaintableWithLines::paint(PaintContext& context, PaintPhase phase) const
     // So, we paint the shadows before painting any text.
     // FIXME: Find a smarter way to do this?
     if (phase == PaintPhase::Foreground) {
+        JS::HighLevelActivityScope scope("Paint: Text shadow"sv);
         for (auto& line_box : m_line_boxes) {
             for (auto& fragment : line_box.fragments()) {
                 if (is<Layout::TextNode>(fragment.layout_node())) {
@@ -617,6 +620,7 @@ void PaintableWithLines::paint(PaintContext& context, PaintPhase phase) const
         }
     }
 
+    JS::HighLevelActivityScope scope("Paint: Text"sv);
     for (auto& line_box : m_line_boxes) {
         for (auto& fragment : line_box.fragments()) {
             auto fragment_absolute_rect = fragment.absolute_rect();

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/DOM/Range.h>
 #include <LibWeb/Dump.h>
 #include <LibWeb/Layout/Viewport.h>
@@ -33,6 +34,7 @@ void Viewport::build_stacking_context_tree_if_needed()
 
 void Viewport::build_stacking_context_tree()
 {
+    JS::HighLevelActivityScope scope("Stacking context tree"sv);
     const_cast<Painting::PaintableBox*>(paintable_box())->set_stacking_context(make<Painting::StackingContext>(*this, nullptr, 0));
 
     size_t index_in_tree_order = 1;
@@ -55,6 +57,7 @@ void Viewport::build_stacking_context_tree()
 
 void Viewport::paint_all_phases(PaintContext& context)
 {
+    JS::HighLevelActivityScope scope("Paint Viewport"sv);
     build_stacking_context_tree_if_needed();
     context.painter().translate(-context.device_viewport_rect().location().to_type<int>());
     paintable_box()->stacking_context()->paint(context);

@@ -12,6 +12,7 @@
 #include <LibJS/Bytecode/Instruction.h>
 #include <LibJS/Bytecode/Interpreter.h>
 #include <LibJS/Bytecode/Op.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibJS/Interpreter.h>
 #include <LibJS/Runtime/GlobalEnvironment.h>
 #include <LibJS/Runtime/GlobalObject.h>
@@ -56,6 +57,8 @@ void Interpreter::visit_edges(Cell::Visitor& visitor)
 // 16.1.6 ScriptEvaluation ( scriptRecord ), https://tc39.es/ecma262/#sec-runtime-semantics-scriptevaluation
 ThrowCompletionOr<Value> Interpreter::run(Script& script_record, JS::GCPtr<Environment> lexical_environment_override)
 {
+    HighLevelActivityScope scope("JS execution"sv);
+
     auto& vm = this->vm();
 
     // 1. Let globalEnv be scriptRecord.[[Realm]].[[GlobalEnv]].

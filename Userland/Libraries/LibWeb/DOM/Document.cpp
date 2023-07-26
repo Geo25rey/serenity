@@ -12,6 +12,7 @@
 #include <AK/StringBuilder.h>
 #include <AK/Utf8View.h>
 #include <LibCore/Timer.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibJS/Interpreter.h>
 #include <LibJS/Runtime/Array.h>
 #include <LibJS/Runtime/FunctionObject.h>
@@ -917,6 +918,7 @@ void Document::invalidate_layout()
 
 void Document::update_layout()
 {
+    JS::HighLevelActivityScope scope("Layout"sv);
     // NOTE: If our parent document needs a relayout, we must do that *first*.
     //       This is necessary as the parent layout may cause our viewport to change.
     if (browsing_context() && browsing_context()->container())
@@ -1014,6 +1016,7 @@ void Document::update_layout()
 
 void Document::update_style()
 {
+    JS::HighLevelActivityScope scope("Style"sv);
     if (!browsing_context())
         return;
     if (!needs_full_style_update() && !needs_style_update() && !child_needs_style_update())
@@ -1961,6 +1964,7 @@ void Document::add_media_query_list(JS::NonnullGCPtr<CSS::MediaQueryList> media_
 // https://drafts.csswg.org/cssom-view/#evaluate-media-queries-and-report-changes
 void Document::evaluate_media_queries_and_report_changes()
 {
+    JS::HighLevelActivityScope scope("Media queries"sv);
     // NOTE: Not in the spec, but we take this opportunity to prune null WeakPtrs.
     m_media_query_lists.remove_all_matching([](auto& it) {
         return it.is_null();
@@ -1996,6 +2000,7 @@ void Document::evaluate_media_queries_and_report_changes()
 
 void Document::evaluate_media_rules()
 {
+    JS::HighLevelActivityScope scope("Media rules"sv);
     bool any_media_queries_changed_match_state = false;
     for (auto& style_sheet : style_sheets().sheets()) {
         if (style_sheet->evaluate_media_queries(window()))

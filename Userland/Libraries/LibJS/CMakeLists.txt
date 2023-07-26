@@ -24,6 +24,7 @@ set(SOURCES
     Heap/Heap.cpp
     Heap/HeapBlock.cpp
     Heap/MarkedVector.cpp
+    HighLevelActivity.cpp
     Interpreter.cpp
     Lexer.cpp
     MarkupGenerator.cpp

@@ -9,6 +9,7 @@
 #include <AK/Debug.h>
 #include <AK/SourceLocation.h>
 #include <AK/Utf32View.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibTextCodec/Decoder.h>
 #include <LibWeb/Bindings/MainThreadVM.h>
 #include <LibWeb/CSS/StyleValues/LengthStyleValue.h>
@@ -212,9 +213,12 @@ void HTMLParser::run()
 
 void HTMLParser::run(const AK::URL& url)
 {
-    m_document->set_url(url);
-    m_document->set_source(m_tokenizer.source());
-    run();
+    {
+        JS::HighLevelActivityScope scope("HTML parser"sv);
+        m_document->set_url(url);
+        m_document->set_source(m_tokenizer.source());
+        run();
+    }
     the_end();
     m_document->detach_parser({});
 }

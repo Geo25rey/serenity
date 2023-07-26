@@ -16,6 +16,7 @@
 #include <AK/ScopeGuard.h>
 #include <AK/StdLibExtras.h>
 #include <AK/TemporaryChange.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibJS/Runtime/RegExpObject.h>
 #include <LibRegex/Regex.h>
 
@@ -688,6 +689,8 @@ bool Parser::parse_directive(ScopeNode& body)
 
 NonnullRefPtr<Program> Parser::parse_program(bool starts_in_strict_mode)
 {
+    JS::HighLevelActivityScope scope("JS parser"sv);
+
     auto rule_start = push_start();
     auto program = adopt_ref(*new Program({ m_source_code, rule_start.position(), position() }, m_program_type));
     ScopePusher program_scope = ScopePusher::program_scope(*this, *program);

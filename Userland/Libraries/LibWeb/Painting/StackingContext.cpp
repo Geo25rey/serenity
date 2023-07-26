@@ -13,6 +13,7 @@
 #include <LibGfx/Matrix4x4.h>
 #include <LibGfx/Painter.h>
 #include <LibGfx/Rect.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/CSS/ComputedValues.h>
 #include <LibWeb/CSS/StyleValues/TransformationStyleValue.h>
 #include <LibWeb/Layout/Box.h>
@@ -367,6 +368,8 @@ Gfx::AffineTransform StackingContext::affine_transform_matrix() const
 
 void StackingContext::paint(PaintContext& context) const
 {
+    JS::HighLevelActivityScope scope("Paint: General"sv);
+
     Gfx::PainterStateSaver saver(context.painter());
     if (m_box->is_fixed_position()) {
         context.painter().translate(-context.painter().translation());
@@ -471,6 +474,8 @@ static TraversalDecision for_each_in_subtree_of_type_within_same_stacking_contex
 
 Optional<HitTestResult> StackingContext::hit_test(CSSPixelPoint position, HitTestType type) const
 {
+    JS::HighLevelActivityScope scope("Hit testing"sv);
+
     if (!m_box->is_visible())
         return {};
 

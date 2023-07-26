@@ -6,6 +6,7 @@
 
 #include <AK/HashTable.h>
 #include <LibGfx/Bitmap.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/Fetch/Fetching/Fetching.h>
 #include <LibWeb/Fetch/Infrastructure/FetchAlgorithms.h>
 #include <LibWeb/Fetch/Infrastructure/FetchController.h>
@@ -110,6 +111,7 @@ void SharedImageRequest::add_callbacks(JS::SafeFunction<void()> on_finish, JS::S
 
 void SharedImageRequest::handle_successful_fetch(AK::URL const& url_string, StringView mime_type, ByteBuffer data)
 {
+    JS::HighLevelActivityScope scope("Image decoding"sv);
     // AD-HOC: At this point, things gets very ad-hoc.
     // FIXME: Bring this closer to spec.
 

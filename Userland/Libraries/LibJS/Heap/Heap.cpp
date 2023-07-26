@@ -15,6 +15,7 @@
 #include <LibJS/Heap/Handle.h>
 #include <LibJS/Heap/Heap.h>
 #include <LibJS/Heap/HeapBlock.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibJS/Interpreter.h>
 #include <LibJS/Runtime/Object.h>
 #include <LibJS/Runtime/WeakContainer.h>
@@ -79,6 +80,8 @@ ALWAYS_INLINE CellAllocator& Heap::allocator_for_size(size_t cell_size)
 
 Cell* Heap::allocate_cell(size_t size)
 {
+    JS::HighLevelActivityScope scope("Cell allocation"sv);
+
     if (should_collect_on_every_allocation()) {
         collect_garbage();
     } else if (m_allocations_since_last_gc > m_max_allocations_between_gc) {
@@ -94,6 +97,8 @@ Cell* Heap::allocate_cell(size_t size)
 
 void Heap::collect_garbage(CollectionType collection_type, bool print_report)
 {
+    JS::HighLevelActivityScope scope("Garbage collection"sv);
+
     VERIFY(!m_collecting_garbage);
     TemporaryChange change(m_collecting_garbage, true);
 
