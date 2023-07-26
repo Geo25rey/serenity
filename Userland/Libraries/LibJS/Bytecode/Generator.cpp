@@ -10,6 +10,7 @@
 #include <LibJS/Bytecode/Instruction.h>
 #include <LibJS/Bytecode/Op.h>
 #include <LibJS/Bytecode/Register.h>
+#include <LibJS/HighLevelActivity.h>
 
 namespace JS::Bytecode {
 
@@ -22,6 +23,7 @@ Generator::Generator()
 
 CodeGenerationErrorOr<NonnullOwnPtr<Executable>> Generator::generate(ASTNode const& node, FunctionKind enclosing_function_kind)
 {
+    HighLevelActivityScope scope("JS compile"sv);
     Generator generator;
     generator.switch_to_basic_block(generator.make_block());
     generator.m_enclosing_function_kind = enclosing_function_kind;

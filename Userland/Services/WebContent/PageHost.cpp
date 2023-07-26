@@ -10,6 +10,7 @@
 #include <LibGfx/Painter.h>
 #include <LibGfx/ShareableBitmap.h>
 #include <LibGfx/SystemTheme.h>
+#include <LibJS/HighLevelActivity.h>
 #include <LibWeb/Cookie/ParsedCookie.h>
 #include <LibWeb/HTML/BrowsingContext.h>
 #include <LibWeb/Layout/Viewport.h>
@@ -382,16 +383,19 @@ void PageHost::page_did_request_media_context_menu(Web::CSSPixelPoint content_po
 
 Vector<Web::Cookie::Cookie> PageHost::page_did_request_all_cookies(URL const& url)
 {
+    JS::HighLevelActivityScope scope("Cookies"sv);
     return m_client.did_request_all_cookies(url);
 }
 
 Optional<Web::Cookie::Cookie> PageHost::page_did_request_named_cookie(URL const& url, DeprecatedString const& name)
 {
+    JS::HighLevelActivityScope scope("Cookies"sv);
     return m_client.did_request_named_cookie(url, name);
 }
 
 DeprecatedString PageHost::page_did_request_cookie(const URL& url, Web::Cookie::Source source)
 {
+    JS::HighLevelActivityScope scope("Cookies"sv);
     auto response = m_client.send_sync_but_allow_failure<Messages::WebContentClient::DidRequestCookie>(move(url), static_cast<u8>(source));
     if (!response) {
         dbgln("WebContent client disconnected during DidRequestCookie. Exiting peacefully.");
