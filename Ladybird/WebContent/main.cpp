@@ -56,12 +56,14 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
         size_t total_count = 0;
         for (;;) {
             auto activity = JS::get_high_level_activity();
-            if (activity.is_null())
+            if (activity.is_null()) {
+                usleep(1);
                 continue;
+            }
             activity_counts.ensure(activity)++;
             total_count++;
 
-            if ((total_count % 1000000) == 0) {
+            if ((total_count % 10000) == 0) {
                 struct E {
                     StringView name;
                     int value;
@@ -83,6 +85,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
                     dbgln("{}% {}", (int)percent, it.name);
                 }
             }
+            usleep(1);
         }
         return 0;
     });

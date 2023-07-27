@@ -248,6 +248,7 @@ void PaintableBox::paint_border(PaintContext& context) const
 
 void PaintableBox::paint_backdrop_filter(PaintContext& context) const
 {
+    JS::HighLevelActivityScope scope("Paint: Backdrop Filter"sv);
     auto& backdrop_filter = computed_values().backdrop_filter();
     if (!backdrop_filter.is_none())
         apply_backdrop_filter(context, layout_node(), absolute_border_box_rect(), normalized_border_radii_data(), backdrop_filter);
