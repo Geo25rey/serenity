@@ -608,6 +608,10 @@ void WebContentView::create_client(WebView::EnableCallgrindProfiling enable_call
     m_client_state.client_handle = Web::Crypto::generate_random_uuid().release_value_but_fixme_should_propagate_errors();
     client().async_set_window_handle(m_client_state.client_handle);
 
+    // FIXME: Update this when the screen DPI changes.
+    if (screen())
+        client().async_set_screen_dpi(screen()->logicalDotsPerInch());
+
     client().async_set_device_pixels_per_css_pixel(m_device_pixel_ratio);
     update_palette();
     client().async_update_system_fonts(Gfx::FontDatabase::default_font_query(), Gfx::FontDatabase::fixed_width_font_query(), Gfx::FontDatabase::window_title_font_query());

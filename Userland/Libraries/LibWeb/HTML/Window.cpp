@@ -546,7 +546,10 @@ Optional<CSS::MediaFeatureValue> Window::query_media_feature(CSS::MediaFeatureID
     case CSS::MediaFeatureID::PrefersReducedTransparency:
         // FIXME: Make this a preference
         return CSS::MediaFeatureValue(CSS::ValueID::NoPreference);
-    // FIXME: resolution
+    case CSS::MediaFeatureID::Resolution:
+        if (page())
+            return CSS::MediaFeatureValue(CSS::Resolution(page()->client().screen_dpi(), CSS::Resolution::Type::Dpi));
+        return CSS::MediaFeatureValue(CSS::Resolution(96, CSS::Resolution::Type::Dpi));
     case CSS::MediaFeatureID::Scan:
         return CSS::MediaFeatureValue(CSS::ValueID::Progressive);
     case CSS::MediaFeatureID::Scripting:

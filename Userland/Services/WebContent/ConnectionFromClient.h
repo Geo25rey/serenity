@@ -84,6 +84,7 @@ private:
     virtual void set_has_focus(bool) override;
     virtual void set_is_scripting_enabled(bool) override;
     virtual void set_device_pixels_per_css_pixel(float) override;
+    virtual void set_screen_dpi(double) override;
     virtual void set_window_position(Gfx::IntPoint) override;
     virtual void set_window_size(Gfx::IntSize) override;
     virtual void handle_file_return(i32 error, Optional<IPC::File> const& file, i32 request_id) override;

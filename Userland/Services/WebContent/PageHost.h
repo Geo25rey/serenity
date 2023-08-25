@@ -33,6 +33,7 @@ public:
     void set_viewport_rect(Web::DevicePixelRect const&);
     void set_screen_rects(Vector<Gfx::IntRect, 4> const& rects, size_t main_screen_index) { m_screen_rect = rects[main_screen_index].to_type<Web::DevicePixels>(); }
     void set_device_pixels_per_css_pixel(float device_pixels_per_css_pixel) { m_device_pixels_per_css_pixel = device_pixels_per_css_pixel; }
+    void set_screen_dpi(float dpi) { m_screen_dpi = dpi; }
     void set_preferred_color_scheme(Web::CSS::PreferredColorScheme);
     void set_should_show_line_box_borders(bool b) { m_should_show_line_box_borders = b; }
     void set_has_focus(bool);
@@ -64,6 +65,7 @@ private:
     virtual Gfx::Palette palette() const override;
     virtual Web::DevicePixelRect screen_rect() const override { return m_screen_rect; }
     virtual double device_pixels_per_css_pixel() const override { return m_device_pixels_per_css_pixel; }
+    virtual double screen_dpi() const override { return m_screen_dpi; }
     virtual Web::CSS::PreferredColorScheme preferred_color_scheme() const override { return m_preferred_color_scheme; }
     virtual void page_did_invalidate(Web::CSSPixelRect const&) override;
     virtual void page_did_change_selection() override;
@@ -123,6 +125,7 @@ private:
     RefPtr<Gfx::PaletteImpl> m_palette_impl;
     Web::DevicePixelRect m_screen_rect;
     Web::DevicePixelSize m_content_size;
+    double m_screen_dpi { 96 };
     float m_device_pixels_per_css_pixel { 1.0f };
     bool m_should_show_line_box_borders { false };
     bool m_has_focus { false };

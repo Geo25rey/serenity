@@ -186,6 +186,7 @@ public:
     virtual bool is_connection_open() const = 0;
     virtual Gfx::Palette palette() const = 0;
     virtual DevicePixelRect screen_rect() const = 0;
+    virtual double screen_dpi() const = 0;
     virtual double device_pixels_per_css_pixel() const = 0;
     virtual CSS::PreferredColorScheme preferred_color_scheme() const = 0;
     virtual void paint(DevicePixelRect const&, Gfx::Bitmap&) = 0;

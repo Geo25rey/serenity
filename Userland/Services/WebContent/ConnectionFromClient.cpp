@@ -772,6 +772,11 @@ void ConnectionFromClient::set_device_pixels_per_css_pixel(float device_pixels_p
     m_page_host->set_device_pixels_per_css_pixel(device_pixels_per_css_pixel);
 }
 
+void ConnectionFromClient::set_screen_dpi(double dpi)
+{
+    m_page_host->set_screen_dpi(dpi);
+}
+
 void ConnectionFromClient::set_window_position(Gfx::IntPoint position)
 {
     m_page_host->set_window_position(position.to_type<Web::DevicePixels>());
