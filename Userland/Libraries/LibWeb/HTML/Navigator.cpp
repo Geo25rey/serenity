@@ -39,6 +39,8 @@ bool Navigator::pdf_viewer_enabled() const
     // The NavigatorPlugins mixin's pdfViewerEnabled getter steps are to return the user agent's PDF viewer supported.
     // NOTE: The NavigatorPlugins mixin should only be exposed on the Window object.
     auto const& window = verify_cast<HTML::Window>(HTML::current_global_object());
+    if (!window.page())
+        return false;
     return window.page()->pdf_viewer_supported();
 }
 
@@ -49,6 +51,8 @@ bool Navigator::webdriver() const
 
     // NOTE: The NavigatorAutomationInformation interface should not be exposed on WorkerNavigator.
     auto const& window = verify_cast<HTML::Window>(HTML::current_global_object());
+    if (!window.page())
+        return false;
     return window.page()->is_webdriver_active();
 }
 

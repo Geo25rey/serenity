@@ -5,8 +5,19 @@
  */
 
 #include <LibJS/Bytecode/Executable.h>
+#include <LibJS/SourceCode.h>
 
 namespace JS::Bytecode {
+
+Executable::Executable(NonnullOwnPtr<IdentifierTable> identifier_table, NonnullOwnPtr<StringTable> string_table, NonnullOwnPtr<RegexTable> regex_table, NonnullRefPtr<SourceCode const> source_code)
+    : string_table(move(string_table))
+    , identifier_table(move(identifier_table))
+    , regex_table(move(regex_table))
+    , source_code(move(source_code))
+{
+}
+
+Executable::~Executable() = default;
 
 void Executable::dump() const
 {
