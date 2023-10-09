@@ -50,7 +50,8 @@ JS_DEFINE_NATIVE_FUNCTION(MapIteratorPrototype::next)
     if (iteration_kind == Object::PropertyKind::Value)
         return create_iterator_result_object(vm, entry.value, false);
 
-    return create_iterator_result_object(vm, Array::create_from(realm, { entry.key, entry.value }), false);
+    Value values[2] = { entry.key, entry.value };
+    return create_iterator_result_object(vm, Array::create_from(realm, ReadonlySpan<Value> { values }), false);
 }
 
 }

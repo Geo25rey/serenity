@@ -93,7 +93,8 @@ static Value get_match_index_par(VM& vm, Utf16View const& string, Match const& m
     VERIFY(match.end_index <= string.length_in_code_units());
 
     // 3. Return CreateArrayFromList(« match.[[StartIndex]], match.[[EndIndex]] »).
-    return Array::create_from(realm, { Value(match.start_index), Value(match.end_index) });
+    Value values[2] = { Value(match.start_index), Value(match.end_index) };
+    return Array::create_from(realm, values);
 }
 
 // 22.2.7.8 MakeMatchIndicesIndexPairArray ( S, indices, groupNames, hasGroups ), https://tc39.es/ecma262/#sec-makematchindicesindexpairarray

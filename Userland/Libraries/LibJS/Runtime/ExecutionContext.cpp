@@ -25,7 +25,7 @@ ExecutionContext::ExecutionContext(MarkedVector<Value> existing_arguments, Marke
 
 ExecutionContext ExecutionContext::copy() const
 {
-    ExecutionContext copy { arguments, local_variables };
+    ExecutionContext copy { arguments.clone(), local_variables.clone() };
 
     copy.function = function;
     copy.realm = realm;

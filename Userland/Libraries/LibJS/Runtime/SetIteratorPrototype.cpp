@@ -52,7 +52,8 @@ JS_DEFINE_NATIVE_FUNCTION(SetIteratorPrototype::next)
     if (iteration_kind == Object::PropertyKind::Value)
         return create_iterator_result_object(vm, value, false);
 
-    return create_iterator_result_object(vm, Array::create_from(realm, { value, value }), false);
+    Value values[2] = { value, value };
+    return create_iterator_result_object(vm, Array::create_from(realm, values), false);
 }
 
 }

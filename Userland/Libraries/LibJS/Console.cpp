@@ -68,7 +68,7 @@ ThrowCompletionOr<Value> Console::assert_()
 
     // 5. Perform Logger("assert", data).
     if (m_client)
-        TRY(m_client->logger(LogLevel::Assert, data));
+        TRY(m_client->logger(LogLevel::Assert, move(data)));
     return js_undefined();
 }
 
@@ -90,7 +90,7 @@ ThrowCompletionOr<Value> Console::debug()
     // 1. Perform Logger("debug", data).
     if (m_client) {
         auto data = vm_arguments();
-        return m_client->logger(LogLevel::Debug, data);
+        return m_client->logger(LogLevel::Debug, move(data));
     }
     return js_undefined();
 }
@@ -101,7 +101,7 @@ ThrowCompletionOr<Value> Console::error()
     // 1. Perform Logger("error", data).
     if (m_client) {
         auto data = vm_arguments();
-        return m_client->logger(LogLevel::Error, data);
+        return m_client->logger(LogLevel::Error, move(data));
     }
     return js_undefined();
 }
@@ -112,7 +112,7 @@ ThrowCompletionOr<Value> Console::info()
     // 1. Perform Logger("info", data).
     if (m_client) {
         auto data = vm_arguments();
-        return m_client->logger(LogLevel::Info, data);
+        return m_client->logger(LogLevel::Info, move(data));
     }
     return js_undefined();
 }
@@ -123,7 +123,7 @@ ThrowCompletionOr<Value> Console::log()
     // 1. Perform Logger("log", data).
     if (m_client) {
         auto data = vm_arguments();
-        return m_client->logger(LogLevel::Log, data);
+        return m_client->logger(LogLevel::Log, move(data));
     }
     return js_undefined();
 }
@@ -150,7 +150,7 @@ ThrowCompletionOr<Value> Console::trace()
     // 2. Optionally, let formattedData be the result of Formatter(data), and incorporate formattedData as a label for trace.
     if (vm.argument_count() > 0) {
         auto data = vm_arguments();
-        auto formatted_data = TRY(m_client->formatter(data));
+        auto formatted_data = TRY(m_client->formatter(move(data)));
         trace.label = TRY(value_vector_to_string(formatted_data));
     }
 
@@ -164,7 +164,7 @@ ThrowCompletionOr<Value> Console::warn()
     // 1. Perform Logger("warn", data).
     if (m_client) {
         auto data = vm_arguments();
-        return m_client->logger(LogLevel::Warn, data);
+        return m_client->logger(LogLevel::Warn, move(data));
     }
     return js_undefined();
 }
@@ -181,7 +181,7 @@ ThrowCompletionOr<Value> Console::dir()
     // 2. Perform Printer("dir", « object », options).
     if (m_client) {
         MarkedVector<Value> printer_arguments { vm.heap() };
-        TRY_OR_THROW_OOM(vm, printer_arguments.try_append(object));
+        printer_arguments.append(object);
 
         return m_client->printer(LogLevel::Dir, move(printer_arguments));
     }
@@ -223,7 +223,7 @@ ThrowCompletionOr<Value> Console::count()
     MarkedVector<Value> concat_as_vector { vm.heap() };
     concat_as_vector.append(PrimitiveString::create(vm, move(concat)));
     if (m_client)
-        TRY(m_client->logger(LogLevel::Count, concat_as_vector));
+        TRY(m_client->logger(LogLevel::Count, move(concat_as_vector)));
     return js_undefined();
 }
 
@@ -251,7 +251,7 @@ ThrowCompletionOr<Value> Console::count_reset()
         MarkedVector<Value> message_as_vector { vm.heap() };
         message_as_vector.append(PrimitiveString::create(vm, move(message)));
         if (m_client)
-            TRY(m_client->logger(LogLevel::CountReset, message_as_vector));
+            TRY(m_client->logger(LogLevel::CountReset, move(message_as_vector)));
     }
 
     return js_undefined();
@@ -267,7 +267,7 @@ ThrowCompletionOr<Value> Console::group()
     String group_label {};
     auto data = vm_arguments();
     if (!data.is_empty()) {
-        auto formatted_data = TRY(m_client->formatter(data));
+        auto formatted_data = TRY(m_client->formatter(move(data)));
         group_label = TRY(value_vector_to_string(formatted_data));
     }
     // ... Otherwise, let groupLabel be an implementation-chosen label representing a group.
@@ -301,7 +301,7 @@ ThrowCompletionOr<Value> Console::group_collapsed()
     String group_label {};
     auto data = vm_arguments();
     if (!data.is_empty()) {
-        auto formatted_data = TRY(m_client->formatter(data));
+        auto formatted_data = TRY(m_client->formatter(move(data)));
         group_label = TRY(value_vector_to_string(formatted_data));
     }
     // ... Otherwise, let groupLabel be an implementation-chosen label representing a group.
@@ -544,7 +544,7 @@ ThrowCompletionOr<String> Console::format_time_since(Core::ElapsedTimer timer)
 }
 
 // 2.1. Logger(logLevel, args), https://console.spec.whatwg.org/#logger
-ThrowCompletionOr<Value> ConsoleClient::logger(Console::LogLevel log_level, MarkedVector<Value> const& args)
+ThrowCompletionOr<Value> ConsoleClient::logger(Console::LogLevel log_level, MarkedVector<Value>&& args)
 {
     auto& vm = m_console.realm().vm();
 
@@ -567,8 +567,8 @@ ThrowCompletionOr<Value> ConsoleClient::logger(Console::LogLevel log_level, Mark
 
     // 5. Otherwise, perform Printer(logLevel, Formatter(args)).
     else {
-        auto formatted = TRY(formatter(args));
-        TRY(printer(log_level, formatted));
+        auto formatted = TRY(formatter(move(args)));
+        TRY(printer(log_level, move(formatted)));
     }
 
     // 6. Return undefined.
@@ -576,7 +576,7 @@ ThrowCompletionOr<Value> ConsoleClient::logger(Console::LogLevel log_level, Mark
 }
 
 // 2.2. Formatter(args), https://console.spec.whatwg.org/#formatter
-ThrowCompletionOr<MarkedVector<Value>> ConsoleClient::formatter(MarkedVector<Value> const& args)
+ThrowCompletionOr<MarkedVector<Value>> ConsoleClient::formatter(MarkedVector<Value>&& args)
 {
     auto& realm = m_console.realm();
     auto& vm = realm.vm();
@@ -680,12 +680,12 @@ ThrowCompletionOr<MarkedVector<Value>> ConsoleClient::formatter(MarkedVector<Val
     // 7. Let result be a list containing target together with the elements of args starting from the third onward.
     MarkedVector<Value> result { vm.heap() };
     result.ensure_capacity(args.size() - 1);
-    result.empend(PrimitiveString::create(vm, move(target)));
+    result.append(PrimitiveString::create(vm, move(target)));
     for (size_t i = 2; i < args.size(); ++i)
         result.unchecked_append(args[i]);
 
     // 8. Return Formatter(result).
-    return formatter(result);
+    return formatter(move(result));
 }
 
 ThrowCompletionOr<String> ConsoleClient::generically_format_values(MarkedVector<Value> const& values)

@@ -91,7 +91,7 @@ JS_DEFINE_NATIVE_FUNCTION(TypedArrayConstructor::from)
 
         // c. Let targetObj be ? TypedArrayCreate(C, « 𝔽(len) »).
         MarkedVector<Value> arguments(vm.heap());
-        arguments.empend(length);
+        arguments.append(Value { length });
         auto* target_object = TRY(typed_array_create(vm, constructor.as_function(), move(arguments)));
 
         // d. Let k be 0.
@@ -138,7 +138,7 @@ JS_DEFINE_NATIVE_FUNCTION(TypedArrayConstructor::from)
 
     // 10. Let targetObj be ? TypedArrayCreate(C, « 𝔽(len) »).
     MarkedVector<Value> arguments(vm.heap());
-    arguments.empend(length);
+    arguments.append(Value { length });
     auto* target_object = TRY(typed_array_create(vm, constructor.as_function(), move(arguments)));
 
     // 11. Let k be 0.

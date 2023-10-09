@@ -293,7 +293,7 @@ ThrowCompletionOr<MarkedVector<Value>> iterator_to_list(VM& vm, IteratorRecord c
             auto next_value = TRY(iterator_value(vm, *next));
 
             // ii. Append nextValue to values.
-            TRY_OR_THROW_OOM(vm, values.try_append(next_value));
+            values.append(next_value);
         }
     } while (next);
 

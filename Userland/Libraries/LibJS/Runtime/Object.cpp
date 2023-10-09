@@ -414,7 +414,8 @@ ThrowCompletionOr<MarkedVector<Value>> Object::enumerable_own_property_names(Pro
             VERIFY(kind == PropertyKind::KeyAndValue);
 
             // ii. Let entry be CreateArrayFromList(« key, value »).
-            auto entry = Array::create_from(realm, { key, value });
+            Value values[2] { key, value };
+            auto entry = Array::create_from(realm, values);
 
             // iii. Append entry to properties.
             properties.append(entry);

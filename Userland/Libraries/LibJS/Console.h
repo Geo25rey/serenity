@@ -107,8 +107,8 @@ public:
 
     using PrinterArguments = Variant<Console::Group, Console::Trace, MarkedVector<Value>>;
 
-    ThrowCompletionOr<Value> logger(Console::LogLevel log_level, MarkedVector<Value> const& args);
-    ThrowCompletionOr<MarkedVector<Value>> formatter(MarkedVector<Value> const& args);
+    ThrowCompletionOr<Value> logger(Console::LogLevel log_level, MarkedVector<Value>&& args);
+    ThrowCompletionOr<MarkedVector<Value>> formatter(MarkedVector<Value>&& args);
     virtual ThrowCompletionOr<Value> printer(Console::LogLevel log_level, PrinterArguments) = 0;
 
     virtual void add_css_style_to_current_message(StringView) { }

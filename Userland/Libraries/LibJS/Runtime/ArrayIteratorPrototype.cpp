@@ -73,7 +73,8 @@ JS_DEFINE_NATIVE_FUNCTION(ArrayIteratorPrototype::next)
     if (iteration_kind == Object::PropertyKind::Value)
         return create_iterator_result_object(vm, value, false);
 
-    return create_iterator_result_object(vm, Array::create_from(realm, { Value(static_cast<i32>(index)), value }), false);
+    Value values[2] = { Value(static_cast<i32>(index)), value };
+    return create_iterator_result_object(vm, Array::create_from(realm, ReadonlySpan<Value> { values }), false);
 }
 
 }
