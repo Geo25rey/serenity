@@ -13,6 +13,7 @@
 #include <LibJS/Bytecode/IdentifierTable.h>
 #include <LibJS/Bytecode/Instruction.h>
 #include <LibJS/Bytecode/Label.h>
+#include <LibJS/Bytecode/Local.h>
 #include <LibJS/Bytecode/RegexTable.h>
 #include <LibJS/Bytecode/Register.h>
 #include <LibJS/Bytecode/StringTable.h>
@@ -434,19 +435,19 @@ private:
 
 class SetLocal final : public Instruction {
 public:
-    explicit SetLocal(size_t index)
+    explicit SetLocal(Local index)
         : Instruction(Type::SetLocal, sizeof(*this))
-        , m_index(index)
+        , m_local(index)
     {
     }
 
     ThrowCompletionOr<void> execute_impl(Bytecode::Interpreter&) const;
     DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
 
-    size_t index() const { return m_index; }
+    Local local() const { return m_local; }
 
 private:
-    size_t m_index;
+    Local m_local;
 };
 
 class GetCalleeAndThisFromEnvironment final : public Instruction {
@@ -510,19 +511,19 @@ private:
 
 class GetLocal final : public Instruction {
 public:
-    explicit GetLocal(size_t index)
+    explicit GetLocal(Local index)
         : Instruction(Type::GetLocal, sizeof(*this))
-        , m_index(index)
+        , m_local(index)
     {
     }
 
     ThrowCompletionOr<void> execute_impl(Bytecode::Interpreter&) const;
     DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
 
-    size_t index() const { return m_index; }
+    Local local() const { return m_local; }
 
 private:
-    size_t m_index;
+    Local m_local;
 };
 
 class DeleteVariable final : public Instruction {

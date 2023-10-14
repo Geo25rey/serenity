@@ -8,6 +8,7 @@
 #include <LibJS/Bytecode/BasicBlock.h>
 #include <LibJS/Bytecode/Generator.h>
 #include <LibJS/Bytecode/Instruction.h>
+#include <LibJS/Bytecode/Local.h>
 #include <LibJS/Bytecode/Op.h>
 #include <LibJS/Bytecode/Register.h>
 
@@ -391,7 +392,7 @@ CodeGenerationErrorOr<void> Generator::emit_delete_reference(JS::ASTNode const& 
 void Generator::emit_set_variable(JS::Identifier const& identifier, Bytecode::Op::SetVariable::InitializationMode initialization_mode, Bytecode::Op::EnvironmentMode mode)
 {
     if (identifier.is_local()) {
-        emit<Bytecode::Op::SetLocal>(identifier.local_variable_index());
+        emit<Bytecode::Op::SetLocal>(Local { identifier.local_variable_index() });
     } else {
         emit<Bytecode::Op::SetVariable>(intern_identifier(identifier.string()), initialization_mode, mode);
     }

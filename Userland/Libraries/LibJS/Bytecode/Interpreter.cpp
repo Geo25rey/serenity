@@ -197,9 +197,9 @@ void Interpreter::run_bytecode()
 
             switch (instruction.type()) {
             case Instruction::Type::GetLocal: {
-                auto& local = locals[static_cast<Op::GetLocal const&>(instruction).index()];
+                auto& local = locals[static_cast<Op::GetLocal const&>(instruction).local().index()];
                 if (local.is_empty()) {
-                    auto const& variable_name = vm().running_execution_context().function->local_variables_names()[static_cast<Op::GetLocal const&>(instruction).index()];
+                    auto const& variable_name = vm().running_execution_context().function->local_variables_names()[static_cast<Op::GetLocal const&>(instruction).local().index()];
                     result = vm().throw_completion<ReferenceError>(ErrorType::BindingNotInitialized, variable_name);
                     break;
                 }
@@ -207,7 +207,7 @@ void Interpreter::run_bytecode()
                 break;
             }
             case Instruction::Type::SetLocal:
-                locals[static_cast<Op::SetLocal const&>(instruction).index()] = accumulator;
+                locals[static_cast<Op::SetLocal const&>(instruction).local().index()] = accumulator;
                 break;
             case Instruction::Type::Load:
                 accumulator = registers[static_cast<Op::Load const&>(instruction).src().index()];
@@ -1971,7 +1971,7 @@ DeprecatedString GetGlobal::to_deprecated_string_impl(Bytecode::Executable const
 
 DeprecatedString GetLocal::to_deprecated_string_impl(Bytecode::Executable const&) const
 {
-    return DeprecatedString::formatted("GetLocal {}", m_index);
+    return DeprecatedString::formatted("GetLocal {}", m_local);
 }
 
 DeprecatedString DeleteVariable::to_deprecated_string_impl(Bytecode::Executable const& executable) const
@@ -2004,7 +2004,7 @@ DeprecatedString SetVariable::to_deprecated_string_impl(Bytecode::Executable con
 
 DeprecatedString SetLocal::to_deprecated_string_impl(Bytecode::Executable const&) const
 {
-    return DeprecatedString::formatted("SetLocal {}", m_index);
+    return DeprecatedString::formatted("SetLocal {}", m_local);
 }
 
 static StringView property_kind_to_string(PropertyKind kind)

@@ -312,7 +312,7 @@ Bytecode::CodeGenerationErrorOr<void> Identifier::generate_bytecode(Bytecode::Ge
     if (is_global()) {
         generator.emit<Bytecode::Op::GetGlobal>(generator.intern_identifier(m_string), generator.next_global_variable_cache());
     } else if (is_local()) {
-        generator.emit<Bytecode::Op::GetLocal>(local_variable_index());
+        generator.emit<Bytecode::Op::GetLocal>(Bytecode::Local { local_variable_index() });
     } else {
         generator.emit<Bytecode::Op::GetVariable>(generator.intern_identifier(m_string));
     }

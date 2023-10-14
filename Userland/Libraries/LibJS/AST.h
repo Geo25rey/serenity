@@ -315,9 +315,10 @@ public:
     ThrowCompletionOr<void> for_each_function_hoistable_with_annexB_extension(ThrowCompletionOrVoidCallback<FunctionDeclaration&>&& callback) const;
 
     Vector<DeprecatedFlyString> const& local_variables_names() const { return m_local_variables_names; }
-    size_t add_local_variable(DeprecatedFlyString name)
+    [[nodiscard]] u32 add_local_variable(DeprecatedFlyString name)
     {
         auto index = m_local_variables_names.size();
+        VERIFY(index <= NumericLimits<u32>::max());
         m_local_variables_names.append(move(name));
         return index;
     }
@@ -652,12 +653,12 @@ public:
     DeprecatedFlyString const& string() const { return m_string; }
 
     bool is_local() const { return m_local_variable_index.has_value(); }
-    size_t local_variable_index() const
+    u32 local_variable_index() const
     {
         VERIFY(m_local_variable_index.has_value());
         return m_local_variable_index.value();
     }
-    void set_local_variable_index(size_t index) { m_local_variable_index = index; }
+    void set_local_variable_index(u32 index) { m_local_variable_index = index; }
 
     bool is_global() const { return m_is_global; }
     void set_is_global() { m_is_global = true; }
@@ -670,7 +671,7 @@ private:
 
     DeprecatedFlyString m_string;
 
-    Optional<size_t> m_local_variable_index;
+    Optional<u32> m_local_variable_index;
     bool m_is_global { false };
 };
 
