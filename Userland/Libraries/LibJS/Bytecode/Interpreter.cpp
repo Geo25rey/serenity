@@ -223,21 +223,21 @@ void Interpreter::run_bytecode()
                 goto start;
             case Instruction::Type::JumpConditional:
                 if (accumulator.to_boolean())
-                    m_current_block = &static_cast<Op::Jump const&>(instruction).true_target()->block();
+                    m_current_block = &static_cast<Op::JumpConditional const&>(instruction).true_target()->block();
                 else
-                    m_current_block = &static_cast<Op::Jump const&>(instruction).false_target()->block();
+                    m_current_block = &static_cast<Op::JumpConditional const&>(instruction).false_target()->block();
                 goto start;
             case Instruction::Type::JumpNullish:
                 if (accumulator.is_nullish())
-                    m_current_block = &static_cast<Op::Jump const&>(instruction).true_target()->block();
+                    m_current_block = &static_cast<Op::JumpNullish const&>(instruction).true_target()->block();
                 else
-                    m_current_block = &static_cast<Op::Jump const&>(instruction).false_target()->block();
+                    m_current_block = &static_cast<Op::JumpNullish const&>(instruction).false_target()->block();
                 goto start;
             case Instruction::Type::JumpUndefined:
                 if (accumulator.is_undefined())
-                    m_current_block = &static_cast<Op::Jump const&>(instruction).true_target()->block();
+                    m_current_block = &static_cast<Op::JumpUndefined const&>(instruction).true_target()->block();
                 else
-                    m_current_block = &static_cast<Op::Jump const&>(instruction).false_target()->block();
+                    m_current_block = &static_cast<Op::JumpUndefined const&>(instruction).false_target()->block();
                 goto start;
             case Instruction::Type::EnterUnwindContext:
                 enter_unwind_context(

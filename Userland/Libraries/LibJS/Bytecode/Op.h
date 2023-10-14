@@ -817,17 +817,15 @@ class Jump : public Instruction {
 public:
     constexpr static bool IsTerminator = true;
 
-    explicit Jump(Type type, Label taken_target, Optional<Label> nontaken_target = {})
-        : Instruction(type, sizeof(*this))
-        , m_true_target(move(taken_target))
-        , m_false_target(move(nontaken_target))
+    Jump(Type type, Label true_target, size_t size)
+        : Instruction(type, size)
+        , m_true_target(true_target)
     {
     }
 
-    explicit Jump(Label taken_target, Optional<Label> nontaken_target = {})
+    explicit Jump(Label true_target)
         : Instruction(Type::Jump, sizeof(*this))
-        , m_true_target(move(taken_target))
-        , m_false_target(move(nontaken_target))
+        , m_true_target(true_target)
     {
     }
 
@@ -835,28 +833,37 @@ public:
     DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
 
     auto& true_target() const { return m_true_target; }
-    auto& false_target() const { return m_false_target; }
 
 protected:
     Optional<Label> m_true_target;
+};
+
+class JumpConditional : public Jump {
+public:
+    explicit JumpConditional(Label true_target, Label false_target)
+        : JumpConditional(Type::JumpConditional, true_target, false_target)
+    {
+    }
+
+    explicit JumpConditional(Type type, Label true_target, Label false_target)
+        : Jump(type, true_target, sizeof(*this))
+        , m_false_target(false_target)
+    {
+    }
+
+    auto& false_target() const { return m_false_target; }
+
+    ThrowCompletionOr<void> execute_impl(Bytecode::Interpreter&) const;
+    DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
+
+protected:
     Optional<Label> m_false_target;
 };
 
-class JumpConditional final : public Jump {
-public:
-    explicit JumpConditional(Label true_target, Label false_target)
-        : Jump(Type::JumpConditional, move(true_target), move(false_target))
-    {
-    }
-
-    ThrowCompletionOr<void> execute_impl(Bytecode::Interpreter&) const;
-    DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
-};
-
-class JumpNullish final : public Jump {
+class JumpNullish final : public JumpConditional {
 public:
     explicit JumpNullish(Label true_target, Label false_target)
-        : Jump(Type::JumpNullish, move(true_target), move(false_target))
+        : JumpConditional(Type::JumpNullish, true_target, false_target)
     {
     }
 
@@ -864,10 +871,10 @@ public:
     DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
 };
 
-class JumpUndefined final : public Jump {
+class JumpUndefined final : public JumpConditional {
 public:
     explicit JumpUndefined(Label true_target, Label false_target)
-        : Jump(Type::JumpUndefined, move(true_target), move(false_target))
+        : JumpConditional(Type::JumpUndefined, true_target, false_target)
     {
     }
 
