@@ -158,6 +158,8 @@ public:
     ThrowCompletionOr<void> execute_impl(Bytecode::Interpreter&) const;
     DeprecatedString to_deprecated_string_impl(Bytecode::Executable const&) const;
 
+    StringTableIndex index() const { return m_string; }
+
 private:
     StringTableIndex m_string;
 };
